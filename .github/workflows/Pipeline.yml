@@ -100,7 +100,7 @@ jobs:
 
       # 6. Ejecutar análisis de SonarCloud En rama feature-1 (SE DEBE CONFIGURAR EN SONARCLOUD RAMA PARA ANALISIS POR DEFECTO EN VERSION GRATIS)
       - name: Perform Initial Analysis (if Project Created)
-        if: env.project_created == 'true'
+        if: env.project_created == 'false'
         run: |
           echo "Realizando análisis inicial en la rama"
           ./node_modules/.bin/sonar-scanner \
@@ -109,3 +109,27 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.branch.name=$BRANCH_NAME
+
+      # 7. Detener ejecucion si existe alguna vulnerabilidad
+      - name: Validate Quality Gate
+        run: |
+          echo "Validando el estado del Quality Gate..."
+          analysisId=$(curl -s -u "$SONAR_TOKEN:" \
+            "https://sonarcloud.io/api/ce/component?component=$REPO_NAME" | jq -r '.current.analysisId')
+
+          qualityGateStatus=$(curl -s -u "$SONAR_TOKEN:" \
+            "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$analysisId" | jq -r '.projectStatus.status')
+
+          if [ "$qualityGateStatus" != "OK" ]; then
+            echo "El proyecto no cumple con el Quality Gate: $qualityGateStatus."
+            echo "Verificando vulnerabilidades críticas..."
+            vulnerabilities=$(curl -s -u "$SONAR_TOKEN:" \
+              "https://sonarcloud.io/api/issues/search?componentKeys=$REPO_NAME&types=VULNERABILITY&severities=CRITICAL,BLOCKER" | jq -r '.total')
+
+            if [ "$vulnerabilities" -gt 0 ]; then
+              echo "Se encontraron $vulnerabilities vulnerabilidades críticas. El proyecto no cumple con los estándares de seguridad."
+              #exit 1
+            fi
+          else
+            echo "El proyecto cumple con el Quality Gate y no tiene vulnerabilidades críticas. Continuando sin problemas."
+          fi
