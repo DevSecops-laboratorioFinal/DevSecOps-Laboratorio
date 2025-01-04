@@ -53,7 +53,7 @@ jobs:
 
           if [ "$EXISTING_PROJECT" == "1" ]; then
             echo "El proyecto ya existe"
-            echo "project_created=true" >> $GITHUB_ENV
+            echo "project_created=false" >> $GITHUB_ENV
           elif [ "$EXISTING_PROJECT" == "null" ]; then
             echo "Error al obtener datos de la API de SonarCloud."
             exit 1
@@ -86,7 +86,19 @@ jobs:
             echo "SonarScanner ya está instalado"
           fi
 
-      # 5. Ejecutar análisis de SonarCloud.
+      # 5. Ejecutar análisis de SonarCloud PRIMEA EJERCUCION CUANDO SE CREA PROYECTO LUEGO DEBO CONFIGURAR SONARCLOUD.
+      - name: Perform Initial Analysis (if Project Created)
+        if: env.project_created == 'true'
+        run: |
+          echo "Realizando análisis inicial en la rama"
+          ./node_modules/.bin/sonar-scanner \
+            -Dsonar.projectKey=$REPO_NAME \
+            -Dsonar.organization=$ORGANIZACION \
+            -Dsonar.host.url=https://sonarcloud.io \
+            -Dsonar.token=$SONAR_TOKEN \
+            -Dsonar.branch.name=master
+
+      # 6. Ejecutar análisis de SonarCloud En rama feature-1 (SE DEBE CONFIGURAR EN SONARCLOUD RAMA PARA ANALISIS POR DEFECTO EN VERSION GRATIS)
       - name: Perform Initial Analysis (if Project Created)
         if: env.project_created == 'true'
         run: |
