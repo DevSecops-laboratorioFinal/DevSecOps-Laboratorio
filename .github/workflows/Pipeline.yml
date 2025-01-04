@@ -33,11 +33,19 @@ jobs:
           echo "Buscando proyecto en SonarCloud..."
           
           # Buscar el proyecto en SonarCloud
-          EXISTING_PROJECT=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
-          "https://sonarcloud.io/api/projects/search?projects=$REPO_NAME" | jq '.paging.total')
+          RESPONSE=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+          "https://sonarcloud.io/api/projects/search?projects=$REPO_NAME")
 
-          echo $EXISTING_PROJECT
+          echo "Response: $RESPONSE"
           
+          # Verificar si la respuesta contiene datos válidos
+          EXISTING_PROJECT=$(echo "$RESPONSE" | jq '.paging.total' 2>/dev/null)
+          
+          if [ "$EXISTING_PROJECT" == "null" ]; then
+            echo "Error al obtener datos de la API de SonarCloud." >&2
+            exit 1
+          fi
+
           if [ "$EXISTING_PROJECT" -eq 0 ]; then
             echo "El proyecto no existe en SonarCloud. Procediendo a crearlo..."
             curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" \
