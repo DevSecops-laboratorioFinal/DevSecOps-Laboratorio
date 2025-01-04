@@ -3,7 +3,7 @@ on:
   push:
     branches:
       - feature-1
-#DEFINIMOS VARIABLES DE ENTORNO
+# DEFINIMOS VARIABLES DE ENTORNO
 env:
   REPO_NAME: DevSecOps-Laboratorio
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
@@ -15,6 +15,9 @@ jobs:
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
+      # 1. Instalar jq
+      - name: Install jq
+        run: sudo apt-get update && sudo apt-get install -y jq
       # 2. Configurar Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
@@ -23,35 +26,34 @@ jobs:
       # 3. Instalar dependencias del proyecto
       - name: Install Dependencies
         run: npm install
-      # 4. Creacion de proyecto en SonarCloud
-      - name: Validando existencia de proyecto en SonarCloud
+      # 4. Verificar y crear proyecto en SonarCloud si no existe
+      - name: Check and Create Project on SonarCloud
         id: validateProjectOnSonar
         run: |
-          # Intentar crear el proyecto en SonarCloud
-          curl -X POST -u '${{ secrets.SONAR_TOKEN }}:' \
-            "https://sonarcloud.io/api/projects/create" \
-            -d "name=$REPO_NAME" \
-            -d "project=$REPO_NAME" \
-            -d "organization=devsecopsusachtest" \
-            -d "visibility=public"
+          echo "Buscando proyecto en SonarCloud..."
+          
+          # Buscar el proyecto en SonarCloud
+          EXISTING_PROJECT=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
+          "https://sonarcloud.io/api/projects/search?projects=$REPO_NAME" | jq '.paging.total')
 
-          echo  "CODIGO ES: $?"
-
-          # Verificar si el proyecto ya existe
-          if [ $? -ne 0 ]; then
-
-            echo "project_created=false" >> $GITHUB_ENV
-
-          else # SI LA RESPUESTA ES 0 O LO CREO O YA EXISTE
-
-            echo "Proyecto ${{ github.event.repository.name }} / $REPO_NAME creado exitosamente en SonarCloud"
-
-            # Establecer la rama main como rama por defecto
+          if [ "$EXISTING_PROJECT" -eq 0 ]; then
+            echo "El proyecto no existe en SonarCloud. Procediendo a crearlo..."
             curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" \
-              "https://sonarcloud.io/api/project_branches/rename" \
-              -d "name=main" \
-              -d "project=$REPO_NAME"
+              "https://sonarcloud.io/api/projects/create" \
+              -d "name=$REPO_NAME" \
+              -d "project=$REPO_NAME" \
+              -d "organization=devsecopsusachtest" \
+              -d "visibility=public"
 
-            echo "project_created=true" >> $GITHUB_ENV
-          fi  
-
+            if [ $? -eq 0 ]; then
+              echo "Proyecto creado exitosamente en SonarCloud."
+              echo "project_created=true" >> $GITHUB_ENV
+            else
+              echo "Error al intentar crear el proyecto en SonarCloud." >&2
+              exit 1
+            fi
+          else
+            echo "El proyecto ya existe en SonarCloud."
+            echo "project_created=false" >> $GITHUB_ENV
+          fi
+     
