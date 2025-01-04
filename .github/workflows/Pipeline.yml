@@ -25,31 +25,12 @@ jobs:
       # 1. Instalar jq
       - name: Install jq
         run: sudo apt-get update && sudo apt-get install -y jq
-        
-      # PASO 5 Valida y configura archivo build.gradle
-      - name: Validate and Configure build.gradle
-        run: |
-          if [ -f "build.gradle" ]; then
-            echo "Encontró el archivo"
-            echo "Verificando configuracion del plugin sonar"
-            if ! grep -q  'id "org.sonarqube" version "3.3"' build.gradle; then
-              echo "No se encuentra Plugin configurado"
-              sed -i '/id '\''java'\''/a \ \ \ \ id '\''org.sonarqube'\'' version '\''3.3'\''' build.gradle
-              echo "Plugin de Sonarcloud acaba de ser añadido a build.gradle"
-              cat build.gradle
-            else 
-              echo "Plugin de sonarcloud ya está configurado en build.gradle"
-            fi
-          else
-            echo "no se encontró archivo build.gradle"
-            exit 1
-          fi
 
       # 2. Configurar Node.js
-      #- name: Set up Node.js
-      #  uses: actions/setup-node@v3
-      #  with:
-      #    node-version: 17 # Ajusta según la versión usada en tu proyecto
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 17 # Ajusta según la versión usada en tu proyecto
 
       # 3. Instalar dependencias del proyecto
       #- name: Install Dependencies
@@ -94,20 +75,14 @@ jobs:
               echo "project_created=true" >> $GITHUB_ENV
             fi
           fi
-
-      # 5 Ejecutargradlew
-      - name: Enable execution gradlew
-        run: | 
-          chmod 777 gradlew  
-          #5 Analisis 
-      # 6. ANALISIS
+          
+      # 6. Ejecutar análisis de SonarCloud
       - name: Perform Initial Analysis (if Project Created)
         if: env.project_created == 'true'
         run: |
           echo "Realizando análisis inicial en la rama"
-          ./gradlew sonarqube \
-            -Dsonar.projectKey=$REPO_NAME \
-            -Dsonar.organization=$ORGANIZACION \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.token=$SONAR_TOKEN \
-            -Dsonar.branch.name=$BRANCH_NAME
+          npm run sonarqube -- --projectKey=$REPO_NAME \
+                              --organization=$ORGANIZACION \
+                              --host-url=https://sonarcloud.io \
+                              --token=$SONAR_TOKEN \
+                              --branch=$RAMA
