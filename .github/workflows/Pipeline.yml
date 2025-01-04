@@ -53,7 +53,6 @@ jobs:
             exit 1
           else
             echo "Proyecto no exite..."
-            # Intentar crear el proyecto en SonarCloud
             echo "Creando proyecto en SonarCloud..."
             curl -X POST -u '${{ secrets.SONAR_TOKEN }}:' \
               "https://sonarcloud.io/api/projects/create" \
@@ -63,12 +62,13 @@ jobs:
               -d "visibility=public"
               
               # Verificar si la respuesta contiene datos válidos
-              EXISTING_PROJECT=$(echo "$?" | jq '.paging.total' 2>/dev/null)
+              CREACION_PROJECT=$(echo "$?" | jq '.paging.total' 2>/dev/null)
 
               if [ $? -ne 0 ]; then
                 echo "Proyecto ${{ github.event.repository.name }} / $REPO_NAME creado exitosamente en SonarCloud"
               else
-                echo "Fallo la creacion $EXISTING_PROJECT"
+                echo "Fallo la creacion"
+                exit 1
               fi
 
           fi
