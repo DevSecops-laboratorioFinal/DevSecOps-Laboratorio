@@ -86,7 +86,7 @@ jobs:
             echo "SonarScanner ya está instalado"
           fi
 
-      # 5. Ejecutar análisis de SonarCloud
+      # 5. Ejecutar análisis de SonarCloud.
       - name: Perform Initial Analysis (if Project Created)
         if: env.project_created == 'true'
         run: |
