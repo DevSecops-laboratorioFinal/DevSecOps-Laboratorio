@@ -75,7 +75,15 @@ jobs:
               echo "project_created=true" >> $GITHUB_ENV
             fi
           fi
-          
+      # 5. Instalar SonarScanner si no está instalado
+      - name: Install SonarScanner
+        run: |
+          if ! command -v sonar-scanner &> /dev/null; then
+            echo "SonarScanner no está instalado, instalando..."
+            npm install sonar-scanner --save-dev
+          else
+            echo "SonarScanner ya está instalado"
+          fi    
       # 6. Ejecutar análisis de SonarCloud
       - name: Perform Initial Analysis (if Project Created)
         if: env.project_created == 'true'
