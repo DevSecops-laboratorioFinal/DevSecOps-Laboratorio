@@ -7,7 +7,7 @@ on:
 env:
   REPO_NAME: DevSecOps-Laboratorio
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-  key_SONAR: devsecops-laboratoriofinal
+  organizacion: devsecops-laboratoriofinal
 
 jobs:
   SAST:
@@ -43,18 +43,13 @@ jobs:
           
           if [ "$EXISTING_PROJECT" == "null" ]; then
             echo "Error al obtener datos de la API de SonarCloud." >&2
-            exit 1
-          fi
-
-          if [ "$EXISTING_PROJECT" -eq 0 ]; then
-            echo "El proyecto no existe en SonarCloud. Procediendo a crearlo..."
+            echo "Puede que no exista el proyecto. Intentando crear Proyecto..."
             curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" \
               "https://sonarcloud.io/api/projects/create" \
               -d "name=$REPO_NAME" \
               -d "project=$REPO_NAME" \
-              -d "organization=devsecopsusachtest" \
+              -d "organization=$organizacion" \
               -d "visibility=public"
-
             if [ $? -eq 0 ]; then
               echo "Proyecto creado exitosamente en SonarCloud."
               echo "project_created=true" >> $GITHUB_ENV
@@ -62,6 +57,10 @@ jobs:
               echo "Error al intentar crear el proyecto en SonarCloud." >&2
               exit 1
             fi
+          fi
+
+          if [ "$EXISTING_PROJECT" -eq 0 ]; then
+            
           else
             echo "El proyecto ya existe en SonarCloud."
             echo "project_created=false" >> $GITHUB_ENV
