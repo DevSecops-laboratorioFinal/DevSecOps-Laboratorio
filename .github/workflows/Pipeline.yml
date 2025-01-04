@@ -50,6 +50,9 @@ jobs:
               -d "project=$REPO_NAME" \
               -d "organization=$organizacion" \
               -d "visibility=public"
+
+            echo "Respuesta: $?"
+
             if [ $? -eq 0 ]; then
               echo "Proyecto creado exitosamente en SonarCloud."
               echo "project_created=true" >> $GITHUB_ENV
