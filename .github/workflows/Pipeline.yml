@@ -31,16 +31,15 @@ jobs:
         id: validateProjectOnSonar
         run: |
           echo "Buscando proyecto en SonarCloud..."
-          
           # Buscar el proyecto en SonarCloud
           RESPONSE=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
           "https://sonarcloud.io/api/projects/search?projects=$REPO_NAME")
 
           echo "Response: $RESPONSE"
-          
+
           # Verificar si la respuesta contiene datos válidos
           EXISTING_PROJECT=$(echo "$RESPONSE" | jq '.paging.total' 2>/dev/null)
-          
+
           if [ "$EXISTING_PROJECT" == "null" ]; then
             echo "Error al obtener datos de la API de SonarCloud." >&2
             echo "Puede que no exista el proyecto. Intentando crear Proyecto..."
@@ -60,12 +59,8 @@ jobs:
               echo "Error al intentar crear el proyecto en SonarCloud." >&2
               exit 1
             fi
-          fi
-
-          if [ "$EXISTING_PROJECT" -eq 0 ]; then
-            
           else
             echo "El proyecto ya existe en SonarCloud."
-            echo "project_created=false" >> $GITHUB_ENV
           fi
+
      
