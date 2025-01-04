@@ -5,8 +5,9 @@ on:
       - feature-1
 #DEFINIMOS VARIABLES DE ENTORNO
 env:
-  REPO_NAME: laboratorio-final
+  REPO_NAME: DevSecOps-Laboratorio
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+  key_SONAR: devsecops-laboratoriofinal
 
 jobs:
   SAST:
@@ -18,7 +19,39 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: 16 # Ajusta según la versión usada en tu proyecto
+          node-version: 17 # Ajusta según la versión usada en tu proyecto
       # 3. Instalar dependencias del proyecto
       - name: Install Dependencies
         run: npm install
+      # 4. Creacion de proyecto en SonarCloud
+      - name: Validando existencia de proyecto en SonarCloud
+        id: validateProjectOnSonar
+        run: |
+          # Intentar crear el proyecto en SonarCloud
+          curl -X POST -u '${{ secrets.SONAR_TOKEN }}:' \
+            "https://sonarcloud.io/api/projects/create" \
+            -d "name=$REPO_NAME" \
+            -d "project=$REPO_NAME" \
+            -d "organization=devsecopsusachtest" \
+            -d "visibility=public"
+
+          echo  "CODIGO ES: $?"
+
+          # Verificar si el proyecto ya existe
+          if [ $? -ne 0 ]; then
+
+            echo "project_created=false" >> $GITHUB_ENV
+
+          else # SI LA RESPUESTA ES 0 O LO CREO O YA EXISTE
+
+            echo "Proyecto ${{ github.event.repository.name }} / $REPO_NAME creado exitosamente en SonarCloud"
+
+            # Establecer la rama main como rama por defecto
+            curl -X POST -u "${{ secrets.SONAR_TOKEN }}:" \
+              "https://sonarcloud.io/api/project_branches/rename" \
+              -d "name=main" \
+              -d "project=$REPO_NAME"
+
+            echo "project_created=true" >> $GITHUB_ENV
+          fi  
+
