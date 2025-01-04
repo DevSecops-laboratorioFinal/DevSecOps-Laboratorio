@@ -62,12 +62,13 @@ jobs:
               -d "organization=$organizacion" \
               -d "visibility=public"
               
-              echo "Respuesta Creacion: $?"
+              # Verificar si la respuesta contiene datos válidos
+              EXISTING_PROJECT=$(echo "$?" | jq '.paging.total' 2>/dev/null)
 
               if [ $? -ne 0 ]; then
-                echo "$?"
-              else
                 echo "Proyecto ${{ github.event.repository.name }} / $REPO_NAME creado exitosamente en SonarCloud"
+              else
+                echo "Fallo la creacion $EXISTING_PROJECT"
               fi
-              
+
           fi
