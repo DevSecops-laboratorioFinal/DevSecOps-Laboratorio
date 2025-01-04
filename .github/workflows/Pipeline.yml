@@ -52,17 +52,22 @@ jobs:
             echo "Error al obtener datos de la API de SonarCloud."
             exit 1
           else
+            echo "Proyecto no exite..."
             # Intentar crear el proyecto en SonarCloud
-            echo "Creando proyecto en SonarCloud."
+            echo "Creando proyecto en SonarCloud..."
             curl -X POST -u '${{ secrets.SONAR_TOKEN }}:' \
               "https://sonarcloud.io/api/projects/create" \
               -d "name=$REPO_NAME" \
               -d "project=$REPO_NAME" \
-              -d "organization=devsecopsusachtest" \
+              -d "organization=$organizacion" \
               -d "visibility=public"
+              
+              echo "Respuesta Creacion: $?"
+
               if [ $? -ne 0 ]; then
                 echo "$?"
               else
                 echo "Proyecto ${{ github.event.repository.name }} / $REPO_NAME creado exitosamente en SonarCloud"
               fi
+              
           fi
