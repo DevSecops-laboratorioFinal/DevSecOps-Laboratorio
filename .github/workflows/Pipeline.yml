@@ -27,19 +27,19 @@ jobs:
     #    run: |
     #      sudo apt-get update
     #      sudo apt-get install -y jq curl
-    #  # ?. Configurar Java 17 (actualización para evitar error de versión de Java)
-    #  - name: Setup Java 17
-    #    uses: actions/setup-java@v3
-    #    with:
-    #      java-version: '17'
-    #      distribution: 'temurin'  # Puedes elegir otra distribución compatible con Java 17
-      # 2. Configurar Node.js
+      # 2. Configurar Java 17 (actualización para evitar error de versión de Java)
+      - name: Setup Java 17
+        uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'  # Puedes elegir otra distribución compatible con Java 17
+      # 3. Configurar Node.js
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: 16 # Ajusta según la versión usada en tu proyecto
 
-      # 2. Verificar y crear proyecto en SonarCloud si no existe
+      # 4. Verificar y crear proyecto en SonarCloud si no existe
       - name: Check and Create Project on SonarCloud
         #id: validateProjectOnSonar
         run: |
@@ -67,12 +67,12 @@ jobs:
             fi
           fi
 
-      # 3. Instalar SonarScanner
+      # 5. Instalar SonarScanner
       - name: Install SonarScanner
         run: |
           npm install sonar-scanner --save-dev
 
-      # 4. Primer análisis (si el proyecto fue creado)
+      # 6. Primer análisis (si el proyecto fue creado)
       - name: Perform Initial Analysis on Main
         #if: env.project_created == 'true'
         run: |
@@ -84,7 +84,7 @@ jobs:
             -Dsonar.branch.name=master \
             -Dsonar.exclusions=**/node_modules/**,**/*.flow
 
-      # 5. Validar Quality Gate
+      # 7. Validar Quality Gate
       - name: Validate Quality Gate
         run: |
           analysisId=$(curl -s -u "$SONAR_TOKEN:" \
