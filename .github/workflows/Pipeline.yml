@@ -106,7 +106,7 @@ jobs:
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '17' # Asegúrate de probar con esta versión
+          node-version: '17'
 
       - name: Check Node.js version
         run: node -v
@@ -114,12 +114,15 @@ jobs:
       - name: Install dependencies
         run: npm install
 
+      - name: Install OWASP Dependency-Check
+        run: npm install -g owasp-dependency-check
+
       - name: Run security analysis
         run: |
-          npx owasp-dependency-check --project $(git rev-parse --show-toplevel) --format HTML --out ./reports --failOnCVSS 7
+          dependency-check --project $(git rev-parse --show-toplevel) --format HTML --out ./reports --failOnCVSS 7
 
       - name: Upload security report
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Dependency-Check Report
           path: ./reports
@@ -128,9 +131,10 @@ jobs:
         run: npm run build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: Build Artifacts
-          path: build/ # Ajusta esta ruta según sea necesario.
+          path: build/
+
 
 
