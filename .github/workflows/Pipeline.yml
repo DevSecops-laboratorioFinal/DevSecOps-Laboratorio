@@ -33,13 +33,13 @@ jobs:
     #    with:
     #      java-version: '17'
     #      distribution: 'temurin'  # Puedes elegir otra distribución compatible con Java 17
-    #  # ?. Configurar Node.js
-    #  - name: Set up Node.js
-    #    uses: actions/setup-node@v3
-    #    with:
-    #      node-version: 16 # Ajusta según la versión usada en tu proyecto
+      # 2. Configurar Node.js
+      - name: Set up Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16 # Ajusta según la versión usada en tu proyecto
 
-      # 4. Verificar y crear proyecto en SonarCloud si no existe
+      # 2. Verificar y crear proyecto en SonarCloud si no existe
       - name: Check and Create Project on SonarCloud
         #id: validateProjectOnSonar
         run: |
@@ -67,12 +67,12 @@ jobs:
             fi
           fi
 
-      # 4. Instalar SonarScanner
+      # 3. Instalar SonarScanner
       - name: Install SonarScanner
         run: |
           npm install sonar-scanner --save-dev
 
-      # 5. Primer análisis (si el proyecto fue creado)
+      # 4. Primer análisis (si el proyecto fue creado)
       - name: Perform Initial Analysis on Main
         #if: env.project_created == 'true'
         run: |
@@ -84,7 +84,7 @@ jobs:
             -Dsonar.branch.name=master \
             -Dsonar.exclusions=**/node_modules/**,**/*.flow
 
-      # 7. Validar Quality Gate
+      # 5. Validar Quality Gate
       - name: Validate Quality Gate
         run: |
           analysisId=$(curl -s -u "$SONAR_TOKEN:" \
