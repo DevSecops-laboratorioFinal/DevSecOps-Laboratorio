@@ -33,8 +33,8 @@ jobs:
           node-version: 17 # Ajusta según la versión usada en tu proyecto
 
       # 3. Instalar dependencias del proyecto
-      - name: Install Dependencies
-        run: npm install
+      #- name: Install Dependencies
+      #  run: npm install
 
       # 4. Verificar y crear proyecto en SonarCloud si no existe
       - name: Check and Create Project on SonarCloud
