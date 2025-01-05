@@ -90,7 +90,7 @@ jobs:
       - name: Perform Initial Analysis (if Project Created)
         if: env.project_created == 'true'
         run: |
-          echo "Realizando análisis inicial en la rama"
+          echo "Realizando análisis inicial en la rama Main"
           ./node_modules/.bin/sonar-scanner \
             -Dsonar.projectKey=$REPO_NAME \
             -Dsonar.organization=$ORGANIZACION \
