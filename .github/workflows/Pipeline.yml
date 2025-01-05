@@ -95,7 +95,7 @@ jobs:
   #        echo "El proyecto cumple con el Quality Gate y no tiene vulnerabilidades críticas. Continuando sin problemas."
 
   SCA:
-    #needs: SAST
+  #needs: SAST
     runs-on: ubuntu-24.04
     steps:
       - name: Checkout code
@@ -112,11 +112,27 @@ jobs:
       - name: Install dependencies
         run: npm install
 
-      - name: Install OWASP Dependency-Check
-        run: npm install owasp-dependency-check --save-dev
+      - name: Validate and Configure package.json
+        run: |
+          if [ -f "package.json" ]; then
+            echo "Encontró el archivo package.json"
+            echo "Verificando configuración del script dependency-check"
+            if ! grep -q '"dependency-check":' package.json; then
+              echo "No se encuentra el script dependency-check configurado"
+              npm install owasp-dependency-check --save-dev
+              sed -i '/"scripts": {/a \    "dependency-check": "dependency-check --project \$(git rev-parse --show-toplevel) --format HTML --out ./reports --failOnCVSS 7",' package.json
+              echo "Script dependency-check añadido a package.json"
+              cat package.json
+            else
+              echo "El script dependency-check ya está configurado en package.json"
+            fi
+          else
+            echo "No se encontró archivo package.json"
+            exit 1
+          fi
 
       - name: Run security analysis
-        run: ./node_modules/.bin/dependency-check --project $(git rev-parse --show-toplevel) --format HTML --out ./reports --failOnCVSS 7
+        run: npm run dependency-check
 
       - name: Upload security report
         uses: actions/upload-artifact@v4
@@ -132,6 +148,7 @@ jobs:
         with:
           name: Build Artifacts
           path: build/
+
 
 
 
