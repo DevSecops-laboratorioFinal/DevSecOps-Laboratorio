@@ -13,18 +13,20 @@ env:
 
 jobs:
   SAST:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
 
     steps:
       - name: Checkout Code
         uses: actions/checkout@v3
 
-      # 0. SETEA LA RAMA COMO VARIABLE DE ENTORNO
+      - name: Install Required Tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y jq curl
+
+      # 0. SETEAR LA RAMA COMO VARIABLE DE ENTORNO
       - name: Set Environment Variables
         run: echo "BRANCH_NAME=${{ github.ref_name }}" >> $GITHUB_ENV
-      # 1. Instalar jq
-      #- name: Install jq
-      #  run: sudo apt-get update && sudo apt-get install -y jq
 
       # 2. Configurar Node.js
       - name: Set up Node.js
@@ -32,64 +34,43 @@ jobs:
         with:
           node-version: 17 # Ajusta según la versión usada en tu proyecto
 
-      # 3. Instalar dependencias del proyecto
-      #- name: Install Dependencies
-      #  run: npm install
-
       # 4. Verificar y crear proyecto en SonarCloud si no existe
       - name: Check and Create Project on SonarCloud
         id: validateProjectOnSonar
         run: |
           echo "Buscando proyecto en SonarCloud..."
-          
-          # Buscar el proyecto en SonarCloud
           RESPONSE=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
             "https://sonarcloud.io/api/projects/search?projects=$REPO_NAME&organization=$ORGANIZACION")
-
-          echo "Response: $RESPONSE"
-
-          # Verificar si la respuesta contiene datos válidos
           EXISTING_PROJECT=$(echo "$RESPONSE" | jq '.paging.total' 2>/dev/null)
-
           if [ "$EXISTING_PROJECT" == "1" ]; then
             echo "El proyecto ya existe"
             echo "project_created=true" >> $GITHUB_ENV
-          elif [ "$EXISTING_PROJECT" == "null" ]; then
-            echo "Error al obtener datos de la API de SonarCloud."
-            exit 1
           else
-            echo "Proyecto no existe... Creando proyecto en SonarCloud..."
+            echo "Creando proyecto en SonarCloud..."
             CREATE_RESPONSE=$(curl -s -X POST -u "${{ secrets.SONAR_TOKEN }}:" \
               "https://sonarcloud.io/api/projects/create" \
               -d "name=$REPO_NAME" \
               -d "project=$REPO_NAME" \
               -d "organization=$ORGANIZACION" \
               -d "visibility=public")
-            
-            # Verificar si la creación fue exitosa
             if echo "$CREATE_RESPONSE" | jq -e '.errors' > /dev/null; then
-              echo "Fallo la creación del proyecto en SonarCloud"
+              echo "Error al crear proyecto en SonarCloud"
               exit 1
             else
-              echo "Proyecto $REPO_NAME creado exitosamente en SonarCloud"
+              echo "Proyecto creado exitosamente"
               echo "project_created=true" >> $GITHUB_ENV
             fi
           fi
+
       # 4. Instalar SonarScanner
       - name: Install SonarScanner
         run: |
-          if ! command -v sonar-scanner &> /dev/null; then
-            echo "SonarScanner no está instalado, instalando..."
-            npm install sonar-scanner --save-dev
-          else
-            echo "SonarScanner ya está instalado"
-          fi
+          npm install sonar-scanner --save-dev
 
-      # 5. Ejecutar análisis de SonarCloud PRIMEA EJERCUCION CUANDO SE CREA PROYECTO LUEGO DEBO CONFIGURAR SONARCLOUD.
-      - name: Perform Initial Analysis (if Project Created)
+      # 5. Primer análisis (si el proyecto fue creado)
+      - name: Perform Initial Analysis on Main
         if: env.project_created == 'true'
         run: |
-          echo "Realizando análisis inicial en la rama Main"
           ./node_modules/.bin/sonar-scanner \
             -Dsonar.projectKey=$REPO_NAME \
             -Dsonar.organization=$ORGANIZACION \
@@ -97,11 +78,10 @@ jobs:
             -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.branch.name=master
 
-      # 6. Ejecutar análisis de SonarCloud En rama feature-1 (SE DEBE CONFIGURAR EN SONARCLOUD RAMA PARA ANALISIS POR DEFECTO EN VERSION GRATIS)
-      - name: Perform Initial Analysis (if Project Created)
+      # 6. Análisis en la rama feature-1
+      - name: Perform Analysis on Feature Branch
         if: env.project_created == 'false'
         run: |
-          echo "Realizando análisis inicial en la rama"
           ./node_modules/.bin/sonar-scanner \
             -Dsonar.projectKey=$REPO_NAME \
             -Dsonar.organization=$ORGANIZACION \
@@ -110,26 +90,21 @@ jobs:
             -Dsonar.branch.name=$BRANCH_NAME \
             -Dsonar.exclusions=**/node_modules/**,**/*.flow
 
-      # 7. Detener ejecucion si existe alguna vulnerabilidad.
+      # 7. Validar Quality Gate
       - name: Validate Quality Gate
         run: |
-          echo "Validando el estado del Quality Gate..."
           analysisId=$(curl -s -u "$SONAR_TOKEN:" \
             "https://sonarcloud.io/api/ce/component?component=$REPO_NAME" | jq -r '.current.analysisId')
-          echo "analysisId = $analysisId"
           qualityGateStatus=$(curl -s -u "$SONAR_TOKEN:" \
             "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$analysisId" | jq -r '.projectStatus.status')
-
           if [ "$qualityGateStatus" != "OK" ]; then
-            echo "El proyecto no cumple con el Quality Gate: $qualityGateStatus."
-            echo "Verificando vulnerabilidades críticas..."
+            echo "El proyecto no cumple con el Quality Gate: $qualityGateStatus"
             vulnerabilities=$(curl -s -u "$SONAR_TOKEN:" \
               "https://sonarcloud.io/api/issues/search?componentKeys=$REPO_NAME&types=VULNERABILITY&severities=CRITICAL,BLOCKER" | jq -r '.total')
-
             if [ "$vulnerabilities" -gt 0 ]; then
-              echo "Se encontraron $vulnerabilities vulnerabilidades críticas. El proyecto no cumple con los estándares de seguridad."
-              #exit 1
+              echo "Se encontraron $vulnerabilities vulnerabilidades críticas. Deteniendo pipeline."
+              exit 1
             fi
           else
-            echo "El proyecto cumple con el Quality Gate y no tiene vulnerabilidades críticas. Continuando sin problemas."
+            echo "El proyecto cumple con el Quality Gate."
           fi
