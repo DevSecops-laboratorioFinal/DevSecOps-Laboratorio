@@ -43,7 +43,7 @@ jobs:
 
       # 4. Verificar y crear proyecto en SonarCloud si no existe
       - name: Check and Create Project on SonarCloud
-        id: validateProjectOnSonar
+        #id: validateProjectOnSonar
         run: |
           echo "Buscando proyecto en SonarCloud..."
           RESPONSE=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
@@ -51,7 +51,7 @@ jobs:
           EXISTING_PROJECT=$(echo "$RESPONSE" | jq '.paging.total' 2>/dev/null)
           if [ "$EXISTING_PROJECT" == "1" ]; then
             echo "El proyecto ya existe"
-            echo "project_created=true" >> $GITHUB_ENV
+            #echo "project_created=true" >> $GITHUB_ENV
           else
             echo "Creando proyecto en SonarCloud..."
             CREATE_RESPONSE=$(curl -s -X POST -u "${{ secrets.SONAR_TOKEN }}:" \
@@ -65,7 +65,7 @@ jobs:
               exit 1
             else
               echo "Proyecto creado exitosamente"
-              echo "project_created=true" >> $GITHUB_ENV
+              #echo "project_created=true" >> $GITHUB_ENV
             fi
           fi
 
@@ -76,25 +76,14 @@ jobs:
 
       # 5. Primer análisis (si el proyecto fue creado)
       - name: Perform Initial Analysis on Main
-        if: env.project_created == 'true'
+        #if: env.project_created == 'true'
         run: |
           ./node_modules/.bin/sonar-scanner \
             -Dsonar.projectKey=$REPO_NAME \
             -Dsonar.organization=$ORGANIZACION \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token=$SONAR_TOKEN \
-            -Dsonar.branch.name=master
-
-      # 6. Análisis en la rama feature-1
-      - name: Perform Analysis on Feature Branch
-        if: env.project_created == 'false'
-        run: |
-          ./node_modules/.bin/sonar-scanner \
-            -Dsonar.projectKey=$REPO_NAME \
-            -Dsonar.organization=$ORGANIZACION \
-            -Dsonar.host.url=https://sonarcloud.io \
-            -Dsonar.token=$SONAR_TOKEN \
-            -Dsonar.branch.name=$BRANCH_NAME \
+            -Dsonar.branch.name=master \
             -Dsonar.exclusions=**/node_modules/**,**/*.flow
 
       # 7. Validar Quality Gate
@@ -115,3 +104,15 @@ jobs:
           else
             echo "El proyecto cumple con el Quality Gate."
           fi
+          echo "El proyecto cumple con el Quality Gate y no tiene vulnerabilidades críticas. Continuando sin problemas."
+
+  SCA:
+    needs: SAST
+    runs-on: ubuntu-24.04
+    steps:
+
+    - name: Checkout code
+      uses: actions/checkout@v3
+
+    - name: Dependency Check
+      uses: dependency-check/Dependency-Check_Action@1.1.0
