@@ -77,7 +77,6 @@ jobs:
           fi
       # 4. Instalar SonarScanner
       - name: Install SonarScanner
-        if: env.project_created == 'true'
         run: |
           if ! command -v sonar-scanner &> /dev/null; then
             echo "SonarScanner no está instalado, instalando..."
