@@ -13,7 +13,7 @@ env:
 
 jobs:
   SAST:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
 
     steps:
       #0. Checkout
@@ -97,7 +97,7 @@ jobs:
 
   SCA:
     needs: SAST
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
 
       - name: Checkout code
@@ -119,7 +119,7 @@ jobs:
           npx owasp-dependency-check --project $(git rev-parse --show-toplevel) --format HTML --out ./reports --failOnCVSS 7
 
       - name: Upload security report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Dependency-Check Report
           path: ./reports
@@ -128,7 +128,7 @@ jobs:
         run: npm run build
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: Build Artifacts
           path: build/ # Ajusta esta ruta según sea necesario
