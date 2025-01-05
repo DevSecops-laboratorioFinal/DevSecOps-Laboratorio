@@ -107,7 +107,8 @@ jobs:
             -Dsonar.organization=$ORGANIZACION \
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token=$SONAR_TOKEN \
-            -Dsonar.branch.name=$BRANCH_NAME
+            -Dsonar.branch.name=$BRANCH_NAME \
+            -Dsonar.exclusions=**/node_modules/**,**/*.flow
 
       # 7. Detener ejecucion si existe alguna vulnerabilidad
       - name: Validate Quality Gate
