@@ -110,7 +110,7 @@ jobs:
             -Dsonar.branch.name=$BRANCH_NAME \
             -Dsonar.exclusions=**/node_modules/**,**/*.flow
 
-      # 7. Detener ejecucion si existe alguna vulnerabilidad
+      # 7. Detener ejecucion si existe alguna vulnerabilidad.
       - name: Validate Quality Gate
         run: |
           echo "Validando el estado del Quality Gate..."
