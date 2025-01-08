@@ -118,10 +118,14 @@ jobs:
 
       # Instala OWASP Dependency-Check globalmente utilizando --legacy-peer-deps y --location=global.
       # Luego, ejecuta OWASP Dependency-Check especificando la ruta del archivo package.json.
+      #- name: Run OWASP Dependency-Check
+      #  run: |
+      #    npm install -g dependency-check --legacy-peer-deps --location=global
+      #    dependency-check --scan ./package.json --format HTML --project "My Project" --out ./reports
       - name: Run OWASP Dependency-Check
         run: |
-          npm install -g dependency-check --legacy-peer-deps --location=global
-          dependency-check --scan ./package.json --format HTML --project "My Project" --out ./reports
+          npm install -g dependency-check --legacy-peer-deps
+          dependency-check ./package.json --format HTML --project "My Project" --out ./reports
 
 
       # Sube el informe de Dependency-Check generado como un artefacto.
