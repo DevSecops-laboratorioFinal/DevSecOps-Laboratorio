@@ -112,41 +112,11 @@ jobs:
       #Instala todas las dependencias necesarias para tu proyecto.
       - name: Install dependencies
         run: npm install
-
-      - name: Validate and Configure package.json
+        
+      - name: Run OWASP Dependency-Check
         run: |
-          if [ -f "package.json" ]; then
-            echo "Encontró el archivo package.json"
-            echo "Verificando configuración del script knip"
-            if ! grep -q '"knip":' package.json; then
-              echo "No se encuentra el script knip configurado"
-              npm install knip --save-dev
-              sed -i '/"scripts": {/a \    "knip": "knip --include unused --reporter json --output ./reports",' package.json
-              echo "Script knip añadido a package.json"
-              cat package.json
-            else
-              echo "El script knip ya está configurado en package.json"
-            fi
-          else
-            echo "No se encontró archivo package.json"
-            exit 1
-          fi
-      #Ejecuta el análisis de seguridad usando knip.
-      - name: Run security analysis
-        run: npm run knip
-
-      #- name: Upload security report
-      #  uses: actions/upload-artifact@v4
-      #  with:
-      #    name: Knip Report
-      #    path: ./reports
-      #- name: Build project
-      #  run: npm run build
-      #- name: Upload build artifacts
-      #  uses: actions/upload-artifact@v4
-      #  with:
-      #    name: Build Artifacts
-      #    path: build/
+          npm install -g dependency-check
+          dependency-check --format HTML --project "My Project" --out ./reports
 
 
 
