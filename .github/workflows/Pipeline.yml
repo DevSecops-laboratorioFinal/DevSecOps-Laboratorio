@@ -95,9 +95,12 @@ jobs:
   #        echo "El proyecto cumple con el Quality Gate y no tiene vulnerabilidades críticas. Continuando sin problemas."
 
   
-  
   SCA:
     runs-on: ubuntu-24.04
+
+    env:
+        VULNERABILIDADES: false  # Inicializa la variable de estado
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -126,7 +129,11 @@ jobs:
           args: --severity-threshold=high --json-file-output=./reports/snyk_report.json
 
       - name: Run npm audit
-        run: npm audit --json > ./reports/npm_audit_report.json
+        run: |
+          npm audit --json > ./reports/npm_audit_report.json || true
+          if [ $? -ne 0 ]; then
+            echo "VULNERABILIDADES=true" >> $GITHUB_ENV
+          fi
 
       - name: Upload Snyk Report
         uses: actions/upload-artifact@v4
@@ -143,8 +150,17 @@ jobs:
       - name: Check for high severity vulnerabilities
         run: |
           if grep -q '"severity": "high"' ./reports/snyk_report.json; then
-            echo "High severity vulnerabilities found!"
+            echo "VULNERABILIDADES=true" >> $GITHUB_ENV
           fi
+
+      # Paso adicional para detener el pipeline si hay vulnerabilidades
+      - name: Fail if there are vulnerabilities
+        run: |
+          if [ "$VULNERABILIDADES" = "true" ]; then
+            echo "Vulnerabilities detected. Stopping the pipeline."
+            exit 1
+          fi
+
 
 
 
