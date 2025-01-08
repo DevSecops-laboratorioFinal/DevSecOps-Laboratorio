@@ -107,11 +107,11 @@ jobs:
       - name: Checkout Código
         uses: actions/checkout@v3
 
-      # 1. Configurar Node.js con la versión 20
+      # 1. Configurar Node.js con la versión 17
       - name: Configurar Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '20'
+          node-version: '17'
 
       # 2. Verificar versión de Node.js
       - name: Verificar Versión de Node.js
