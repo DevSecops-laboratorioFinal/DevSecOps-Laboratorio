@@ -95,28 +95,41 @@ jobs:
   #        echo "El proyecto cumple con el Quality Gate y no tiene vulnerabilidades críticas. Continuando sin problemas."
 
   SCA:
-  #needs: SAST
     runs-on: ubuntu-24.04
     steps:
-      #Extrae el código del repositorio
+      # Extrae el código del repositorio
       - name: Checkout code
         uses: actions/checkout@v3
-      #Configura Node.jsen la versión especificada. Esto se hace antes de instalar cualquier dependencia, lo cual es esencial porque npm install requiere Node.jspara ejecutarse.
+
+      # Configura Node.js en la versión especificada. Esto se hace antes de instalar cualquier dependencia,
+      # ya que npm install requiere Node.js para ejecutarse.
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
           node-version: '17'
-      #Imprime la versión de Node.js, útil para asegurar que el entorno esté correctamente configurado. (OPCIONAL)
+
+      # Imprime la versión de Node.js instalada. Esto es útil para asegurar que el entorno esté configurado correctamente.
       - name: Check Node.js version
         run: node -v
-      #Instala todas las dependencias necesarias para tu proyecto.
+
+      # Instala todas las dependencias necesarias para tu proyecto.
+      # La opción --legacy-peer-deps permite instalar dependencias ignorando conflictos de dependencias peer.
       - name: Install dependencies
-        run: npm install
-        
+        run: npm install --legacy-peer-deps
+
+      # Instala OWASP Dependency-Check globalmente usando --legacy-peer-deps para ignorar conflictos de dependencias peer.
+      # Luego, ejecuta OWASP Dependency-Check para analizar las dependencias del proyecto.
       - name: Run OWASP Dependency-Check
         run: |
-          npm install -g dependency-check
+          npm install -g dependency-check --legacy-peer-deps
           dependency-check --format HTML --project "My Project" --out ./reports
+
+      # Sube el informe de Dependency-Check generado como un artefacto para que esté disponible en GitHub.
+      - name: Upload Dependency-Check Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: Dependency-Check Report
+          path: ./reports
 
 
 
