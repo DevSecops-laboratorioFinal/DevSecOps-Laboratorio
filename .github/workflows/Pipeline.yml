@@ -121,7 +121,8 @@ jobs:
       - name: Run OWASP Dependency-Check
         run: |
           npm install -g dependency-check --legacy-peer-deps --location=global
-          dependency-check ./package.json --format HTML --project "My Project" --out ./reports
+          dependency-check --scan ./package.json --format HTML --project "My Project" --out ./reports
+
 
       # Sube el informe de Dependency-Check generado como un artefacto.
       - name: Upload Dependency-Check Report
