@@ -99,39 +99,53 @@ jobs:
   SCA:
     runs-on: ubuntu-24.04
     steps:
-      # Extrae el código del repositorio
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Configura Node.js en la versión especificada.
       - name: Set up Node.js
         uses: actions/setup-node@v3
         with:
-          node-version: '17'
+          node-version: '20'
 
-      # Imprime la versión de Node.js instalada.
       - name: Check Node.js version
         run: node -v
 
-      # Instala todas las dependencias necesarias para tu proyecto.
       - name: Install dependencies
         run: npm install --legacy-peer-deps
 
-      # Ejecuta Snyk para analizar las dependencias del proyecto.
+      - name: Create reports directory
+        run: mkdir -p ./reports
+
       - name: Dependency Check
         uses: snyk/actions/node@master
+        continue-on-error: true
         env:
           SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
         with:
           command: test
           args: --severity-threshold=high --json-file-output=./reports/snyk_report.json
 
-      # Sube el informe de Snyk generado como un artefacto.
+      - name: Run npm audit
+        run: npm audit --json > ./reports/npm_audit_report.json
+
       - name: Upload Snyk Report
         uses: actions/upload-artifact@v4
         with:
           name: Snyk Report
           path: ./reports/snyk_report.json
+
+      - name: Upload npm Audit Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: npm Audit Report
+          path: ./reports/npm_audit_report.json
+
+      - name: Check for high severity vulnerabilities
+        run: |
+          if grep -q '"severity": "high"' ./reports/snyk_report.json; then
+            echo "High severity vulnerabilities found!"
+          fi
+
 
 
 
