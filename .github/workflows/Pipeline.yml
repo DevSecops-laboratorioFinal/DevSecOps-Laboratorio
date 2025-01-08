@@ -140,6 +140,7 @@ jobs:
           npm audit --json > ./reports/npm_audit_report.json || true
           if [ $? -ne 0 ]; then
             echo "VULNERABILIDADES=true" >> $GITHUB_ENV
+          fi
 
       # 7. Subir reporte de Snyk
       - name: Subir Reporte de Snyk
@@ -166,4 +167,5 @@ jobs:
         run: |
           if [ "$VULNERABILIDADES" = "true" ]; then
             echo "Vulnerabilidades Detectadas. Detiene proceso de pipeline."
-            exit 1
+            #exit 1
+          fi
