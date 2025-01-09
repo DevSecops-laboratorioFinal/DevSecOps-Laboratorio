@@ -163,7 +163,7 @@ jobs:
           if grep -q '"severity": "high"' ./reports/snyk_report.json; then
             echo "VULNERABILIDADES=true" >> $GITHUB_ENV
           fi
-      # 10. Fallar si hay vulnerabilidades
+      # 10. Fallar si hay vulnerabilidades.
       - name: Fallar si hay Vulnerabilidades
         run: |
           if [ "$VULNERABILIDADES" = "true" ]; then
