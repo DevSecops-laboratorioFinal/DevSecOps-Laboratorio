@@ -84,7 +84,7 @@ jobs:
             "https://sonarcloud.io/api/ce/component?component=$REPO_NAME" | jq -r '.current.analysisId')
           qualityGateStatus=$(curl -s -u "$SONAR_TOKEN:" \
             "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$analysisId" | jq -r '.projectStatus.status')
-          if [ "$qualityGateStatus" != "OK" ]; then
+          #if [ "$qualityGateStatus" != "OK" ]; then
             echo "El proyecto no cumple con el Quality Gate: $qualityGateStatus"
             vulnerabilities=$(curl -s -u "$SONAR_TOKEN:" \
               "https://sonarcloud.io/api/issues/search?componentKeys=$REPO_NAME&types=VULNERABILITY&severities=CRITICAL,BLOCKER" | jq -r '.total')
@@ -92,9 +92,9 @@ jobs:
               echo "Se encontraron $vulnerabilities vulnerabilidades críticas. Deteniendo pipeline."
               exit 1
             fi
-          else
-            echo "El proyecto cumple con el Quality Gate."
-          fi
+          #else
+          #  echo "El proyecto cumple con el Quality Gate."
+          #fi
 
   SCA:
     runs-on: ubuntu-24.04
