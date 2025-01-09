@@ -75,7 +75,7 @@ jobs:
             -Dsonar.host.url=https://sonarcloud.io \
             -Dsonar.token=$SONAR_TOKEN \
             -Dsonar.branch.name=master
-
+            -Dsonar.exclusions=**/node_modules/**,**/*.flow
       # 7. Validar Quality Gate
       - name: Validar Quality Gate
         run: |
