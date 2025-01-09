@@ -106,7 +106,7 @@ jobs:
       VULNERABILIDADES: false  # Inicializa la variable de estado.
 
     steps:
-      # 0. Checkout: Obtenemos el código fuente
+      # 0. Checkout: Obtenemos el código fuente.
       - name: Checkout Código
         uses: actions/checkout@v3
 
