@@ -85,7 +85,7 @@ jobs:
           echo "$analysisId"
           qualityGateStatus=$(curl -s -u "$SONAR_TOKEN:" \
             "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$analysisId" | jq -r '.projectStatus.status')
-          #if [ "$qualityGateStatus" != "OK" ]; then
+          if [ "$qualityGateStatus" != "OK" ]; then
             echo "El proyecto no cumple con el Quality Gate: $qualityGateStatus"
             vulnerabilities=$(curl -s -u "$SONAR_TOKEN:" \
               "https://sonarcloud.io/api/issues/search?componentKeys=$REPO_NAME&types=VULNERABILITY&severities=CRITICAL,BLOCKER" | jq -r '.total')
