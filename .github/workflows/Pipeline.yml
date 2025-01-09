@@ -103,7 +103,7 @@ jobs:
     needs: SAST
 
     env:
-      VULNERABILIDADES: false  # Inicializa la variable de estado
+      VULNERABILIDADES: false  # Inicializa la variable de estado.
 
     steps:
       # 0. Checkout: Obtenemos el código fuente
