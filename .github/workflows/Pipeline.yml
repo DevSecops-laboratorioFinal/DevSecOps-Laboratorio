@@ -77,7 +77,7 @@ jobs:
             -Dsonar.branch.name=master \
             -Dsonar.exclusions=**/node_modules/**,**/*.flow,**/*.cjs.js.flow
 
-      # 7. Validar Quality Gate
+      # 7. Validar Quality Gate.
       - name: Validar Quality Gate
         run: |
           analysisId=$(curl -s -u "$SONAR_TOKEN:" \
