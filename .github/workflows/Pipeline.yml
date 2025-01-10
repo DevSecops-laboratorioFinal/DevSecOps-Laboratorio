@@ -67,7 +67,7 @@ jobs:
         run: npm install sonar-scanner --save-dev
 
       # 6. Primer análisis (si el proyecto fue creado)
-      - name: Realizar Análisis Inicial en Main
+      - name: Realizar Análisis SAST
         run: |
           ./node_modules/.bin/sonar-scanner \
             -Dsonar.projectKey=$REPO_NAME \
@@ -80,25 +80,32 @@ jobs:
       # 7. Validar Quality Gate y vulnerabilidades.
       - name: Validar Quality Gate y vulnerabilidades
         run: |
-          analysisId=$(curl -s -u "$SONAR_TOKEN:" \
-            "https://sonarcloud.io/api/ce/component?component=$REPO_NAME" | jq -r '.current.analysisId')
-          echo "$analysisId"
-          qualityGateStatus=$(curl -s -u "$SONAR_TOKEN:" \
-            "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$analysisId" | jq -r '.projectStatus.status')
-          if [ "$qualityGateStatus" != "OK" ]; then
-            echo "El proyecto no cumple con el Quality Gate: $qualityGateStatus"
-          fi
+          #analysisId=$(curl -s -u "$SONAR_TOKEN:" \
+          #  "https://sonarcloud.io/api/ce/component?component=$REPO_NAME" | jq -r '.current.analysisId')
+          #echo "$analysisId"
+          #qualityGateStatus=$(curl -s -u "$SONAR_TOKEN:" \
+          #  "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$analysisId" | jq -r '.projectStatus.status')
+          #if [ "$qualityGateStatus" != "OK" ]; then
+          #  echo "El proyecto no cumple con el Quality Gate: $qualityGateStatus"
+          #fi
 
-          # Buscar vulnerabilidades críticas, altas o medias
+          #Busca el status del proyecto una vez realizado el analisis.
+          project_status=$(curl -s -u "$SONAR_TOKEN:" \
+            "https://sonarcloud.io/api/ce/component?component=$REPO_NAME" | jq -r '.current.status')
+          #if [ "$qualityGateStatus" != "OK" ]; then
+            echo "El estado del proyecto: $project_status"
+          #fi
+
+          # Buscar vulnerabilidades críticas, altas o medias en el ultimo analisis realizado
+          echo "Buscando vulnerabilidades del analisis realizado..."
           vulnerabilities=$(curl -s -u "$SONAR_TOKEN:" \
             "https://sonarcloud.io/api/issues/search?componentKeys=$REPO_NAME&types=VULNERABILITY&severities=BLOCKER,CRITICAL,MAJOR" | jq -r '.total')
-          echo "$vulnerabilities"
           if [ "$vulnerabilities" -gt 0 ]; then
             echo "Se encontraron $vulnerabilities vulnerabilidades críticas, altas o medias. Deteniendo pipeline."
             exit 1
           fi
 
-          echo "El proyecto cumple con el Quality Gate y no tiene vulnerabilidades críticas, altas o medias."
+          echo "El proyecto no tiene vulnerabilidades críticas, altas o medias."
 
 
 
