@@ -110,7 +110,6 @@ jobs:
             echo "Se encontraron $vulnerabilities vulnerabilidades críticas, altas o medias. Deteniendo pipeline."
             exit 1
           fi
-
           echo "El proyecto no tiene vulnerabilidades críticas, altas o medias."
 
 
