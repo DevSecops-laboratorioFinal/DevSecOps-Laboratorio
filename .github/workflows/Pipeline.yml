@@ -99,9 +99,9 @@ jobs:
             "https://sonarcloud.io/api/ce/component?component=$REPO_NAME" | jq -r '.current.status')
           if [ "$project_status" != "SUCCESS" ]; then
             echo "El estado del proyecto: $project_status"
-          else
-            echo "El estado del proyecto: $project_status RECHAZADO"
             exit 1
+          else
+            echo "El estado del proyecto: $project_status"
           fi
 
           # BUSCA VULNERABILIDADES CRÍTICAS, ALTAS O MEDIAS EN EL ULTIMO ANALISIS REALIZADO.
