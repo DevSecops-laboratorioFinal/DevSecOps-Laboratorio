@@ -88,7 +88,7 @@ jobs:
           if [ "$qualityGateStatus" != "OK" ]; then
             echo "El proyecto no cumple con el Quality Gate: $qualityGateStatus"
             vulnerabilities=$(curl -s -u "$SONAR_TOKEN:" \
-              "https://sonarcloud.io/api/measures/component?componentKey=$REPO_NAME&metricKeys=vulnerabilities" | jq -r '.component.measures[0].value')
+              "https://sonarcloud.io/api/measures/component?componentKey=$REPO_NAME&metricKeys=bugs,code_smells,coverage,vulnerabilities&additionalFields=metrics,periods" | jq -r '.component.measures[0].value')
             echo "$vulnerabilities"
             if [ "$vulnerabilities" -gt 0 ]; then
               echo "Se encontraron $vulnerabilities vulnerabilidades. Deteniendo pipeline."
