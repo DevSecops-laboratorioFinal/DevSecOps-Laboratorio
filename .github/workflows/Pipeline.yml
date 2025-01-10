@@ -40,6 +40,7 @@ jobs:
       # 4. Verificar y crear proyecto en SonarCloud si no existe
       - name: Verificar y Crear Proyecto en SonarCloud
         run: |
+          # 4. Verificar y crear proyecto en SonarCloud si no existe
           echo "Buscando proyecto en SonarCloud..."
           RESPONSE=$(curl -s -u "${{ secrets.SONAR_TOKEN }}:" \
             "https://sonarcloud.io/api/projects/search?projects=$REPO_NAME&organization=$ORGANIZACION")
@@ -69,6 +70,7 @@ jobs:
       # 6. Primer análisis (si el proyecto fue creado)
       - name: Realizar Análisis SAST
         run: |
+          # 6. Primer análisis (si el proyecto fue creado)
           ./node_modules/.bin/sonar-scanner \
             -Dsonar.projectKey=$REPO_NAME \
             -Dsonar.organization=$ORGANIZACION \
@@ -80,6 +82,7 @@ jobs:
       # 7. Validar Quality Gate y vulnerabilidades.
       - name: Validar Quality Gate y vulnerabilidades
         run: |
+          #7. Validar Quality Gate y vulnerabilidades.
           #OBTENER EL ID DEL ANALISIS REALIZADO
           analysisId=$(curl -s -u "$SONAR_TOKEN:" \
             "https://sonarcloud.io/api/ce/component?component=$REPO_NAME" | jq -r '.current.analysisId')
@@ -94,11 +97,11 @@ jobs:
           #BUSCA EL STATUS DEL PROYECTO LUEGO DEL ULTIMO ANALISIS REALIZADO
           project_status=$(curl -s -u "$SONAR_TOKEN:" \
             "https://sonarcloud.io/api/ce/component?component=$REPO_NAME" | jq -r '.current.status')
-          if [ "$qualityGateStatus" != "OK" ]; then
+          if [ "$qualityGateStatus" != "SUCCESS" ]; then
             echo "El estado del proyecto: $project_status"
+            exit 1
           fi
-            echo "El estado del proyecto: $project_status"
-
+          echo "El estado del proyecto: $project_status"
           # BUSCA VULNERABILIDADES CRÍTICAS, ALTAS O MEDIAS EN EL ULTIMO ANALISIS REALIZADO.
           echo "Buscando vulnerabilidades del analisis realizado..."
           vulnerabilities=$(curl -s -u "$SONAR_TOKEN:" \
