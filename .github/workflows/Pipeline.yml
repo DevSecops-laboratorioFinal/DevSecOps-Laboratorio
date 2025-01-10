@@ -80,23 +80,26 @@ jobs:
       # 7. Validar Quality Gate y vulnerabilidades.
       - name: Validar Quality Gate y vulnerabilidades
         run: |
-          #analysisId=$(curl -s -u "$SONAR_TOKEN:" \
-          #  "https://sonarcloud.io/api/ce/component?component=$REPO_NAME" | jq -r '.current.analysisId')
-          #echo "$analysisId"
+          #OBTENER EL ID DEL ANALISIS REALIZADO
+          analysisId=$(curl -s -u "$SONAR_TOKEN:" \
+            "https://sonarcloud.io/api/ce/component?component=$REPO_NAME" | jq -r '.current.analysisId')
+          echo "ID del analisis realizado : $analysisId"
+
           #qualityGateStatus=$(curl -s -u "$SONAR_TOKEN:" \
           #  "https://sonarcloud.io/api/qualitygates/project_status?analysisId=$analysisId" | jq -r '.projectStatus.status')
           #if [ "$qualityGateStatus" != "OK" ]; then
           #  echo "El proyecto no cumple con el Quality Gate: $qualityGateStatus"
           #fi
 
-          #Busca el status del proyecto una vez realizado el analisis.
+          #BUSCA EL STATUS DEL PROYECTO LUEGO DEL ULTIMO ANALISIS REALIZADO
           project_status=$(curl -s -u "$SONAR_TOKEN:" \
             "https://sonarcloud.io/api/ce/component?component=$REPO_NAME" | jq -r '.current.status')
-          #if [ "$qualityGateStatus" != "OK" ]; then
+          if [ "$qualityGateStatus" != "OK" ]; then
             echo "El estado del proyecto: $project_status"
-          #fi
+          fi
+            echo "El estado del proyecto: $project_status"
 
-          # Buscar vulnerabilidades críticas, altas o medias en el ultimo analisis realizado
+          # BUSCA VULNERABILIDADES CRÍTICAS, ALTAS O MEDIAS EN EL ULTIMO ANALISIS REALIZADO.
           echo "Buscando vulnerabilidades del analisis realizado..."
           vulnerabilities=$(curl -s -u "$SONAR_TOKEN:" \
             "https://sonarcloud.io/api/issues/search?componentKeys=$REPO_NAME&types=VULNERABILITY&severities=BLOCKER,CRITICAL,MAJOR" | jq -r '.total')
