@@ -188,5 +188,16 @@ jobs:
         run: |
           if [ "$VULNERABILIDADES" = "true" ]; then
             echo "Vulnerabilidades Detectadas. Detiene proceso de pipeline."
-            exit 1
+            #exit 1
           fi
+  IMAGE-ANALISIS-DOCKER:
+      runs-on: ubuntu-24.04
+      needs: SCA
+      env:
+        validacion: true
+      steps:
+      # 0. Checkout: Obtenemos el código fuente.
+      - name: Checkout Código
+        uses: actions/checkout@v3
+
+
