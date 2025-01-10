@@ -99,9 +99,11 @@ jobs:
             "https://sonarcloud.io/api/ce/component?component=$REPO_NAME" | jq -r '.current.status')
           if [ "$qualityGateStatus" != "SUCCESS" ]; then
             echo "El estado del proyecto: $project_status"
+          else
+            echo "El estado del proyecto: $project_status"
             exit 1
           fi
-          echo "El estado del proyecto: $project_status"
+          
           # BUSCA VULNERABILIDADES CRÍTICAS, ALTAS O MEDIAS EN EL ULTIMO ANALISIS REALIZADO.
           echo "Buscando vulnerabilidades del analisis realizado..."
           vulnerabilities=$(curl -s -u "$SONAR_TOKEN:" \
