@@ -194,7 +194,7 @@ jobs:
 
   Contruir-Docker:
     runs-on: ubuntu-24.04
-    #needs: SCA
+    needs: SCA
     steps:
     # Paso 0: Descargar el código del repositorio
     - name: Checkout Código
