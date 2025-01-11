@@ -11,7 +11,7 @@ env:
   SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
   ORGANIZACION: devsecops-laboratoriofinal
   SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
-  NOMBRE_IMAGEN: laboratorio-devsecops
+  NOMBRE_IMAGEN: laboratorio-final-devsecops
 
 jobs:
 #  SAST:
