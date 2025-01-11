@@ -219,8 +219,8 @@ jobs:
     - name: Construir Docker image
       run: docker build -t ${{ env.NOMBRE_IMAGEN }} .
 
-    # Paso 4: Verificar Imagen creada
-    - name: List Docker images
+    # Paso 4: Verificar Imagen creada.
+    - name: Listar Docker images
       run: docker images
 
   
