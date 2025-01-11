@@ -195,8 +195,6 @@ jobs:
   IMAGE-ANALISIS-DOCKER:
     runs-on: ubuntu-latest
     #needs: SCA
-    env:
-      NOMBRE_IMAGEN: laboratorio-devsecops # Definir la variable de entorno
 
     steps:
     # 0. Checkout: Obtenemos el código fuente.
@@ -242,4 +240,6 @@ jobs:
         docker images
         IMAGE_ID=$(docker images ${{ env.NOMBRE_IMAGEN }} --format "{{.ID}}")
         echo "ID de la imagen: $IMAGE_ID"
+        echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
+    # Paso 7
     
