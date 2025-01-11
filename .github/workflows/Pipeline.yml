@@ -302,6 +302,10 @@ jobs:
         
           SCAN_OUTPUT=$(./bin/trivy image --severity HIGH,CRITICAL efelantevolador/laboratorio-final-devsecops:latest)
           
+
+          echo "PRUEBA $SCAN_OUTPUT"
+
+
           # Verificar si hay vulnerabilidades (si hay más de 3 líneas, hay vulnerabilidades)
           # Las primeras líneas son el encabezado de la tabla
           LINE_COUNT=$(echo "$SCAN_OUTPUT" | wc -l)
