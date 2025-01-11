@@ -111,11 +111,9 @@ jobs:
             "https://sonarcloud.io/api/issues/search?componentKeys=$REPO_NAME&types=VULNERABILITY&severities=BLOCKER,CRITICAL,MAJOR" | jq -r '.total')
           if [ "$vulnerabilities" -gt 0 ]; then
             echo "Se encontraron $vulnerabilities vulnerabilidades críticas, altas o medias. Deteniendo pipeline."
-            #exit 1
+            exit 1
           fi
           echo "El proyecto no tiene vulnerabilidades críticas, altas o medias."
-
-
 
   SCA:
     runs-on: ubuntu-24.04
@@ -189,7 +187,7 @@ jobs:
         run: |
           if [ "$VULNERABILIDADES" = "true" ]; then
             echo "Vulnerabilidades Detectadas. Detiene proceso de pipeline."
-            #exit 1
+            exit 1
           fi
 
   Contruir-Docker:
