@@ -217,8 +217,8 @@ jobs:
 
     # Paso 3: Verificar si la imagen ya existe, detiene la ejecucion y elimina el contenedor luego crea una nueva.
     - name: Verificar y manejar imagen existente
-      run: |
-        # Detener y eliminar el contenedor si existe
+      # Detener y eliminar el contenedor si existe
+      run: | 
         if [ "$(docker ps -q -f name=${{ env.NOMBRE_IMAGEN }})" ]; then
           echo "Deteniendo contenedor existente: ${{ env.NOMBRE_IMAGEN }}"
           docker stop ${{ env.NOMBRE_IMAGEN }}
@@ -235,7 +235,11 @@ jobs:
         # Construir la nueva imagen Docker
         echo "Construyendo nueva imagen Docker"
         docker build -t ${{ env.NOMBRE_IMAGEN }} .
-    # Paso 3: Construir Imagen de docker
-    - name: Construir Docker image
-      run: docker build -t ${{ env.NOMBRE_IMAGEN }} .
+    
+    # Paso 6: Listar todas las imágenes Docker existentes y obtener el ID de la nueva imagen
+    - name: List Docker images and get ID
+      run: |
+        docker images
+        IMAGE_ID=$(docker images ${{ env.NOMBRE_IMAGEN }} --format "{{.ID}}")
+        echo "ID de la imagen: $IMAGE_ID"
     
