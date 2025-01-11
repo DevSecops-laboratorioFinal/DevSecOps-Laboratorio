@@ -266,22 +266,22 @@ jobs:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-    #  # Paso 2: Instalar Trivy
-    #  - name: Instalar Trivy
-    #    run: |
-    #      echo "Instalando Trivy"
-    #      curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
-    #      if [ -f "./trivy" ]; then
-    #        sudo mv trivy /usr/local/bin/
-    #        sudo chmod +x /usr/local/bin/trivy
-    #      else
-    #        echo "Error: Trivy no se descargó correctamente"
-    #        exit 1
-    #      fi
+      # Paso 2: Instalar Trivy
+      - name: Instalar Trivy
+        run: |
+          echo "Instalando Trivy"
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+          if [ -f "./trivy" ]; then
+            sudo mv trivy /usr/local/bin/
+            sudo chmod +x /usr/local/bin/trivy
+          else
+            echo "Error: Trivy no se descargó correctamente"
+            exit 1
+          fi
 
       # Paso 3: Escanear la imagen Docker con Trivy
       - name: Ejecutar Trivy Scan
         run: |
           echo "Ejecutando análisis de vulnerabilidades con Trivy"
-          trivy image --format table --output trivy_report.txt ${{ env.NOMBRE_IMAGEN }}
+          trivy image --format table --output trivy_report.txt ${{ secrets.DOCKER_USER }}/${{ env.NOMBRE_IMAGEN }}:latest
           cat trivy_report.txt
