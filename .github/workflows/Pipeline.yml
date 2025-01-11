@@ -215,12 +215,27 @@ jobs:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
+    # Paso 3: Verificar si la imagen ya existe, detiene la ejecucion y elimina el contenedor luego crea una nueva.
+    - name: Verificar y manejar imagen existente
+      run: |
+        # Detener y eliminar el contenedor si existe
+        if [ "$(docker ps -q -f name=${{ env.NOMBRE_IMAGEN }})" ]; then
+          echo "Deteniendo contenedor existente: ${{ env.NOMBRE_IMAGEN }}"
+          docker stop ${{ env.NOMBRE_IMAGEN }}
+          echo "Eliminando contenedor existente: ${{ env.NOMBRE_IMAGEN }}"
+          docker rm ${{ env.NOMBRE_IMAGEN }}
+        fi
+
+        # Eliminar la imagen si existe
+        if docker images ${{ env.NOMBRE_IMAGEN }} | grep -q ${{ env.NOMBRE_IMAGEN }}; then
+          echo "Eliminando imagen existente: ${{ env.NOMBRE_IMAGEN }}"
+          docker rmi ${{ env.NOMBRE_IMAGEN }}
+        fi
+
+        # Construir la nueva imagen Docker
+        echo "Construyendo nueva imagen Docker"
+        docker build -t ${{ env.NOMBRE_IMAGEN }} .
     # Paso 3: Construir Imagen de docker
     - name: Construir Docker image
       run: docker build -t ${{ env.NOMBRE_IMAGEN }} .
-
-    # Paso 4: Verificar Imagen creada.
-    - name: Listar Docker images
-      run: docker images
-
-  
+    
