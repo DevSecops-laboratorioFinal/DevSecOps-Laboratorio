@@ -192,7 +192,7 @@ jobs:
 #            #exit 1
 #          fi
 
-  IMAGE-ANALISIS-DOCKER:
+  Contruir-Docker:
     runs-on: ubuntu-latest
     #needs: SCA
     steps:
@@ -239,9 +239,30 @@ jobs:
         docker images
         IMAGE_ID=$(docker images ${{ env.NOMBRE_IMAGEN }} --format "{{.ID}}")
         echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
-
+        echo "$IMAGE_ID"
     # Paso 5: Ejecutar la imagen Docker en un nuevo contenedor para pruebas y análisis
     - name: Ejecutar Docker image
       run: |
         echo "Ejecutando la imagen Docker"
         docker run --name devsecops-container -p 3000:3000 -d $IMAGE_ID
+  
+  DockerScan:
+    needs: Contruir-Docker
+    runs-on: ubuntu-24.04
+    steps:
+    # Paso 1: Instalar Trivy
+    - name: Instalar Trivy
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y wget apt-transport-https gnupg lsb-release
+        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
+        echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
+        sudo apt-get update
+        sudo apt-get install -y trivy
+
+    # Paso 2: Escanear la imagen Docker y mostrar la tabla de análisis
+    - name: Ejecutar Trivy Scan
+      run: |
+        echo "Ejecutando análisis de vulnerabilidades con Trivy"
+        trivy image --format table --output trivy_report.txt ${{ env.NOMBRE_IMAGEN }}
+        cat trivy_report.txt
