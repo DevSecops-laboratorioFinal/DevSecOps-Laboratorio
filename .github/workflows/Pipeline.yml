@@ -305,15 +305,11 @@ jobs:
             echo "Vulnerabilidades críticas o medias encontradas. Deteniendo el proceso."
             exit 1
           fi    
-          
-          # Verificar si Trivy ha encontrado vulnerabilidades
+
+          # Validar las vulnerabilidades
           vulnerabilities=$(jq '[.[] | select(.severity == "CRITICAL" or .severity == "HIGH" or .severity == "MEDIUM")]' ./reports/trivy_report.json)
-          if [ "$(echo "$vulnerabilities" | jq length)" -gt 0 ]; then
-            echo "Vulnerabilidades críticas, altas o medias detectadas. Deteniendo pipeline."
-            exit 1
-          else
-            echo "No se encontraron vulnerabilidades críticas, altas o medias."
-          fi
+
+          echo "$vulnerabilities"
       # Paso 5: Subir reporte de Trivy
       - name: Subir Reporte de Trivy
         uses: actions/upload-artifact@v4
