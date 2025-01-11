@@ -212,12 +212,19 @@ jobs:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    # Paso 3: Verificar si la imagen ya existe, detener la ejecución y eliminar el contenedor, luego crear una nueva
-    - name: Genera Imagen Docker
-      run: | 
-        # Construir la nueva imagen Docker
-        echo "Construyendo nueva imagen Docker"
-        docker build -t ${{ env.NOMBRE_IMAGEN }} .
+    ## Paso 3: Verificar si la imagen ya existe, detener la ejecución y eliminar el contenedor, luego crear una nueva
+    #- name: Genera Imagen Docker
+    #  run: | 
+    #    # Construir la nueva imagen Docker
+    #    echo "Construyendo nueva imagen Docker"
+    #    docker build -t ${{ env.NOMBRE_IMAGEN }} .
+    - name: Construir y (opcionalmente) Subir Imagen Docker
+      uses: docker/build-push-action@v3
+      with:
+        context: .
+        push: false  # Cambiar a true si quieres subir la imagen a un registro
+        tags: ${{ env.NOMBRE_IMAGEN }}:latest
+      
     
     # Paso 4: Verificar si el repositorio existe en Docker Hub y crearlo si no existe
     - name: Verificar y Crear Repositorio en Docker Hub
