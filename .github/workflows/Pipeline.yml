@@ -294,20 +294,26 @@ jobs:
         run: |
           echo "Ejecutando análisis de Trivy"
           
-          # Asegurarse de que el binario de Trivy esté en el PATH
-          export PATH=$PATH:$(pwd)/bin
+          ## Asegurarse de que el binario de Trivy esté en el PATH
+          #export PATH=$PATH:$(pwd)/bin
+          #
+          ## Ejecutar el análisis (se especifica la imagen en Docker Hub)
+          #./bin/trivy image --severity HIGH,CRITICAL efelantevolador/laboratorio-final-devsecops:latest
+        
+          SCAN_OUTPUT=$(./bin/trivy image --severity HIGH,CRITICAL efelantevolador/laboratorio-final-devsecops:latest)
           
-          # Ejecutar el análisis (se especifica la imagen en Docker Hub)
-          ./bin/trivy image --severity HIGH,CRITICAL efelantevolador/laboratorio-final-devsecops:latest
+          # Verificar si hay vulnerabilidades (si hay más de 3 líneas, hay vulnerabilidades)
+          # Las primeras líneas son el encabezado de la tabla
+          LINE_COUNT=$(echo "$SCAN_OUTPUT" | wc -l)
           
-          #Validacion de vulnerabilidades
-          if [ $? -ne 0 ]; then
-            echo "Vulnerabilidades críticas o medias encontradas. Deteniendo el proceso."
+          if [ "$LINE_COUNT" -gt 3 ]; then
+            echo "Se encontraron vulnerabilidades críticas o altas:"
+            echo "$SCAN_OUTPUT"
             exit 1
-          fi    
-
-          # Validar las vulnerabilidades
-          vulnerabilities=$(jq '[.[] | select(.severity == "CRITICAL" or .severity == "HIGH" or .severity == "MEDIUM")]' ./reports/trivy_report.json)
+          else
+            echo "No se encontraron vulnerabilidades críticas o altas"
+            exit 0
+          fi
 
           echo "$vulnerabilities"
       # Paso 5: Subir reporte de Trivy
