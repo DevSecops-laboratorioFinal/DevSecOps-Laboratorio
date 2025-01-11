@@ -225,7 +225,6 @@ jobs:
         # Variables
         DOCKER_USERNAME=${{ secrets.DOCKER_USER }}
         DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}
-        REPO_NAME="laboratorio-devsecops"
         REPO_DESCRIPTION="Repositorio para DevSecOps"
 
         # Verificar si el repositorio existe
