@@ -283,9 +283,14 @@ jobs:
             exit 1
           fi
 
-      # Paso 3: Escanear la imagen Docker con Trivy
+      # Paso 3: Ejecutar el análisis con Trivy
       - name: Ejecutar Trivy Scan
         run: |
-          echo "Ejecutando análisis de vulnerabilidades con Trivy"
-          trivy image --format table --output trivy_report.txt ${{ secrets.DOCKER_USER }}/${{ env.NOMBRE_IMAGEN }}:latest
-          cat trivy_report.txt
+          echo "Ejecutando análisis de Trivy"
+          
+          # Asegurarse de que el binario de Trivy esté en el PATH
+          export PATH=$PATH:$(pwd)/bin
+          
+          # Ejecutar el análisis (se especifica la imagen en Docker Hub)
+          ./bin/trivy image --severity HIGH,CRITICAL efelantevolador/laboratorio-final-devsecops:latest
+
