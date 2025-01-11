@@ -247,7 +247,7 @@ jobs:
         fi
     
     # Paso 5: Etiquetar y empujar la imagen Docker a Docker Hub
-    - name: Empujar imagen a Docker Hub
+    - name:  Push de imagen a Docker Hub
       run: |
         # Etiquetar la imagen
         docker tag ${{ env.NOMBRE_IMAGEN }} ${{ secrets.DOCKER_USER }}/laboratorio-final-devsecops:latest
@@ -257,7 +257,7 @@ jobs:
   
   DockerScan:
     needs: Contruir-Docker
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     steps:
       # Paso 1: Iniciar sesión en Docker Hub
       - name: Iniciar Sesión en Docker Hub
@@ -270,12 +270,16 @@ jobs:
       - name: Instalar Trivy
         run: |
           echo "Instalando Trivy"
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
-          if [ -f "./trivy" ]; then
-            sudo mv trivy /usr/local/bin/
-            sudo chmod +x /usr/local/bin/trivy
-          else
-            echo "Error: Trivy no se descargó correctamente"
+          
+          # Crear el directorio donde se instalará Trivy
+          mkdir -p ./bin
+          
+          # Descargar e instalar Trivy usando el script oficial
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b ./bin v0.58.1
+
+          # Verificar que Trivy se haya instalado correctamente
+          if [ ! -f ./bin/trivy ]; then
+            echo "Error: Trivy no se instaló correctamente."
             exit 1
           fi
 
