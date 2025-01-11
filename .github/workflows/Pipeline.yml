@@ -285,4 +285,4 @@ jobs:
         with:
           image-ref: 'efelantevolador/laboratorio-final-devsecops:latest'
           format: 'json' # Cambiado a json para obtener resultados más detallados
-          #exit-code: '1'  # Esto hará que el pipeline falle si se encuentran vulnerabilidades
+          exit-code: '1'  # Esto hará que el pipeline falle si se encuentran vulnerabilidades
