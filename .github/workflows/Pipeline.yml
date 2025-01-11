@@ -259,72 +259,52 @@ jobs:
     needs: Contruir-Docker
     runs-on: ubuntu-24.04
     steps:
-      # Paso 1: Iniciar sesión en Docker Hub
-      - name: Iniciar Sesión en Docker Hub
-        uses: docker/login-action@v2
+
+      # Paso 0: Iniciar sesión en Docker Hub
+      - name: Docker Login
+        uses: docker/login-action@v3.0.0
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASSWORD }}
-
-      # Paso 2: Instalar Trivy
-      - name: Instalar Trivy
-        run: |
-          echo "Instalando Trivy"
-          
-          # Crear el directorio donde se instalará Trivy
-          mkdir -p ./bin
-          
-          # Descargar e instalar Trivy usando el script oficial
-          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b ./bin v0.58.1
-
-          # Verificar que Trivy se haya instalado correctamente
-          if [ ! -f ./bin/trivy ]; then
-            echo "Error: Trivy no se instaló correctamente."
-            exit 1
-          fi
-
-      # Paso 3: Crear directorio para el reporte de Trivy
-      - name: Crear directorio para el reporte de Trivy
-        run: |
-          # Crear el directorio 'reports' si no existe
-          mkdir -p ./reports
       
-      # Paso 4: Ejecutar el análisis con Trivy
+
+      ## Paso 1: Instalar Trivy
+      #- name: Instalar Trivy
+      #  run: |
+      #    echo "Instalando Trivy"
+      #    
+      #    # Crear el directorio donde se instalará Trivy
+      #    mkdir -p ./bin
+      #    
+      #    # Descargar e instalar Trivy usando el script oficial
+      #    curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh -s -- -b ./bin v0.58.1
+      #    # Verificar que Trivy se haya instalado correctamente
+      #    if [ ! -f ./bin/trivy ]; then
+      #      echo "Error: Trivy no se instaló correctamente."
+      #      exit 1
+      #    fi
+
+      #Paso 2    
+      - name: Pull Docker
+        run: |
+          docker pull efelantevolador/laboratorio-final-devsecops:latest
+
+      # Paso 3: Ejecutar el análisis con Trivy
       - name: Ejecutar Trivy Scan
         run: |
           echo "Ejecutando análisis de Trivy"
           
-          ## Asegurarse de que el binario de Trivy esté en el PATH
-          #export PATH=$PATH:$(pwd)/bin
-          #
-          ## Ejecutar el análisis (se especifica la imagen en Docker Hub)
-          #./bin/trivy image --severity HIGH,CRITICAL efelantevolador/laboratorio-final-devsecops:latest
+          # Asegurarse de que el binario de Trivy esté en el PATH
+          export PATH=$PATH:$(pwd)/bin
+          
+          # Ejecutar el análisis (se especifica la imagen en Docker Hub)
+          ./bin/trivy image --severity HIGH,CRITICAL efelantevolador/laboratorio-final-devsecops:latest
         
-          SCAN_OUTPUT=$(./bin/trivy image --severity HIGH,CRITICAL efelantevolador/laboratorio-final-devsecops:latest)
-          
+          - name: Run Trivy Scan
+          uses: aquasecurity/trivy-action@master
+          with:
+            image-ref: 'efelantevolador/laboratorio-final-devsecops:latest'
+            format: 'table'
 
-          echo "PRUEBA $SCAN_OUTPUT"
-
-
-          # Verificar si hay vulnerabilidades (si hay más de 3 líneas, hay vulnerabilidades)
-          # Las primeras líneas son el encabezado de la tabla
-          LINE_COUNT=$(echo "$SCAN_OUTPUT" | wc -l)
-          
-          if [ "$LINE_COUNT" -gt 3 ]; then
-            echo "Se encontraron vulnerabilidades críticas o altas:"
-            echo "$SCAN_OUTPUT"
-            exit 1
-          else
-            echo "No se encontraron vulnerabilidades críticas o altas"
-            exit 0
-          fi
-
-          echo "$vulnerabilities"
-      # Paso 5: Subir reporte de Trivy
-      - name: Subir Reporte de Trivy
-        uses: actions/upload-artifact@v4
-        with:
-          name: Trivy Report
-          path: ./reports/trivy_report.json
 
       
