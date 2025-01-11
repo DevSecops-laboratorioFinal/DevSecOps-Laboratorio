@@ -228,18 +228,18 @@ jobs:
         REPO_DESCRIPTION="Repositorio para DevSecOps"
 
         # Verificar si el repositorio existe
-        response=$(curl -s -o /dev/null -w "%{http_code}" -u "$DOCKER_USERNAME:$DOCKER_PASSWORD" "https://hub.docker.com/v2/repositories/$DOCKER_USERNAME/$REPO_NAME/")
+        response=$(curl -s -o /dev/null -w "%{http_code}" -u "$DOCKER_USERNAME:$DOCKER_PASSWORD" "https://hub.docker.com/v2/repositories/$DOCKER_USERNAME/$NOMBRE_IMAGEN/")
 
         if [ "$response" -eq 200 ]; then
-          echo "El repositorio '$REPO_NAME' existe en Docker Hub."
+          echo "El repositorio '$NOMBRE_IMAGEN' existe en Docker Hub."
         else
-          echo "El repositorio '$REPO_NAME' no existe en Docker Hub."
+          echo "El repositorio '$NOMBRE_IMAGEN' no existe en Docker Hub."
           echo "CREANDO REPOSITORIO..."
           curl -X POST "https://hub.docker.com/v2/repositories/" \
           -H "Content-Type: application/json" \
           -u "$DOCKER_USERNAME:$DOCKER_PASSWORD" \
           -d '{
-            "name": "'"${REPO_NAME}"'",
+            "name": "'"${NOMBRE_IMAGEN}"'",
             "description": "'"${REPO_DESCRIPTION}"'",
             "is_private": false
           }'
