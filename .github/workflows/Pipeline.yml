@@ -202,7 +202,7 @@ jobs:
 
     # Paso 1: Configurar Docker Buildx para la construcción de imágenes
     - name: Set up Docker Buildx
-      uses: docker/setup-buildx-action@v1
+      uses: docker/setup-buildx-action@v3
 
     # Paso 2: Iniciar sesión en Docker Hub
     - name: Iniciar Sesion en Docker Hub
@@ -212,18 +212,13 @@ jobs:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    ## Paso 3: Verificar si la imagen ya existe, detener la ejecución y eliminar el contenedor, luego crear una nueva
-    #- name: Genera Imagen Docker
-    #  run: | 
-    #    # Construir la nueva imagen Docker
-    #    echo "Construyendo nueva imagen Docker"
-    #    docker build -t ${{ env.NOMBRE_IMAGEN }} .
-    - name: Construir y (opcionalmente) Subir Imagen Docker
-      uses: docker/build-push-action@v3
-      with:
-        context: .
-        push: false  # Cambiar a true si quieres subir la imagen a un registro
-        tags: ${{ env.NOMBRE_IMAGEN }}:latest
+    # Paso 3: Verificar si la imagen ya existe, detener la ejecución y eliminar el contenedor, luego crear una nueva
+    - name: Genera Imagen Docker
+      run: | 
+        # Construir la nueva imagen Docker
+        echo "Construyendo nueva imagen Docker"
+        docker build -t ${{ env.NOMBRE_IMAGEN }} .
+    
       
     
     # Paso 4: Verificar si el repositorio existe en Docker Hub y crearlo si no existe
