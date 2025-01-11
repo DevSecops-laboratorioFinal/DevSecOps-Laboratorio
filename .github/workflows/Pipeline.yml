@@ -282,13 +282,13 @@ jobs:
             echo "Error: Trivy no se instaló correctamente."
             exit 1
           fi
+
       # Paso 3: Crear directorio para el reporte de Trivy
       - name: Crear directorio para el reporte de Trivy
         run: |
           # Crear el directorio 'reports' si no existe
           mkdir -p ./reports
       
-
       # Paso 4: Ejecutar el análisis con Trivy
       - name: Ejecutar Trivy Scan
         run: |
@@ -298,8 +298,14 @@ jobs:
           export PATH=$PATH:$(pwd)/bin
           
           # Ejecutar el análisis (se especifica la imagen en Docker Hub)
-          ./bin/trivy image --format json --severity CRITICAL,HIGH,MEDIUM --output ./reports/trivy_report.json ${{ secrets.DOCKER_USER }}/laboratorio-final-devsecops:latest
-
+          ./bin/trivy image --severity HIGH,CRITICAL efelantevolador/laboratorio-final-devsecops:latest
+          
+          #Validacion de vulnerabilidades
+          if [ $? -ne 0 ]; then
+            echo "Vulnerabilidades críticas o medias encontradas. Deteniendo el proceso."
+            exit 1
+          fi    
+          
           # Verificar si Trivy ha encontrado vulnerabilidades
           vulnerabilities=$(jq '[.[] | select(.severity == "CRITICAL" or .severity == "HIGH" or .severity == "MEDIUM")]' ./reports/trivy_report.json)
           if [ "$(echo "$vulnerabilities" | jq length)" -gt 0 ]; then
@@ -308,7 +314,6 @@ jobs:
           else
             echo "No se encontraron vulnerabilidades críticas, altas o medias."
           fi
-          
       # Paso 5: Subir reporte de Trivy
       - name: Subir Reporte de Trivy
         uses: actions/upload-artifact@v4
@@ -316,19 +321,4 @@ jobs:
           name: Trivy Report
           path: ./reports/trivy_report.json
 
-      ## Paso 3: Ejecutar el análisis con Trivy
-      #- name: Ejecutar Trivy Scan
-      #  run: |
-      #    echo "Ejecutando análisis de Trivy"
-      #    
-      #    # Asegurarse de que el binario de Trivy esté en el PATH
-      #    export PATH=$PATH:$(pwd)/bin
-      #    
-      #    # Ejecutar el análisis (se especifica la imagen en Docker Hub)
-      #    ./bin/trivy image --severity HIGH,CRITICAL efelantevolador/laboratorio-final-devsecops:latest
-      #    
-      #    #Validacion de vulnerabilidades
-      #    if [ $? -ne 0 ]; then
-      #      echo "Vulnerabilidades críticas o medias encontradas. Deteniendo el proceso."
-      #      exit 1
-      #    fi
+      
