@@ -213,26 +213,60 @@ jobs:
         password: ${{ secrets.DOCKER_PASSWORD }}
 
     # Paso 3: Verificar si la imagen ya existe, detener la ejecución y eliminar el contenedor, luego crear una nueva
-    - name: Verificar y manejar imagen existente
+    - name: Genera Imagen Docker
       run: | 
         # Construir la nueva imagen Docker
         echo "Construyendo nueva imagen Docker"
         docker build -t ${{ env.NOMBRE_IMAGEN }} .
     
-    # Paso 4: Subir la imagen a Docker Hub
-    - name: Subir imagen a Docker Hub
+    # Paso 4: Verificar si el repositorio existe en Docker Hub y crearlo si no existe
+    - name: Verificar y Crear Repositorio en Docker Hub
       run: |
-        docker push ${{ env.NOMBRE_IMAGEN }}
-    
-    # Paso 5: Listar todas las imágenes Docker existentes y obtener el ID de la nueva imagen
-    - name: Listar Docker images y obtener ID de imagen
-      run: |
-        docker images
-        IMAGE_ID=$(docker images ${{ env.NOMBRE_IMAGEN }} --format "{{.ID}}")
-        echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
-        echo "$IMAGE_ID"
+        # Variables
+        DOCKER_USERNAME=${{ secrets.DOCKER_USER }}
+        DOCKER_PASSWORD=${{ secrets.DOCKER_PASSWORD }}
+        REPO_NAME="laboratorio-devsecops"
+        REPO_DESCRIPTION="Repositorio para DevSecOps"
 
-    ## Paso 5: Ejecutar la imagen Docker en un nuevo contenedor para pruebas y análisis
+        # Verificar si el repositorio existe
+        response=$(curl -s -o /dev/null -w "%{http_code}" -u "$DOCKER_USERNAME:$DOCKER_PASSWORD" "https://hub.docker.com/v2/repositories/$DOCKER_USERNAME/$REPO_NAME/")
+
+        if [ "$response" -eq 200 ]; then
+          echo "El repositorio '$REPO_NAME' existe en Docker Hub."
+        else
+          echo "El repositorio '$REPO_NAME' no existe en Docker Hub."
+          echo "CREANDO REPOSITORIO..."
+          curl -X POST "https://hub.docker.com/v2/repositories/" \
+          -H "Content-Type: application/json" \
+          -u "$DOCKER_USERNAME:$DOCKER_PASSWORD" \
+          -d '{
+            "name": "'"${REPO_NAME}"'",
+            "description": "'"${REPO_DESCRIPTION}"'",
+            "is_private": false
+          }'
+        fi
+    # Paso 5: Etiquetar y empujar la imagen Docker a Docker Hub
+    - name: Empujar imagen a Docker Hub
+      run: |
+        # Etiquetar la imagen
+        docker tag ${{ env.NOMBRE_IMAGEN }} ${{ secrets.DOCKER_USER }}/laboratorio-devsecops:latest
+
+        # Empujar la imagen al repositorio
+        docker push ${{ secrets.DOCKER_USER }}/laboratorio-devsecops:latest
+    
+    ## Paso 4: Subir la imagen a Docker Hub
+    #- name: Subir imagen a Docker Hub
+    #  run: |
+    #    docker push ${{ env.NOMBRE_IMAGEN }}
+    #
+    ## Paso 5: Listar todas las imágenes Docker existentes y obtener el ID de la nueva imagen
+    #- name: Listar Docker images y obtener ID de imagen
+    #  run: |
+    #    docker images
+    #    IMAGE_ID=$(docker images ${{ env.NOMBRE_IMAGEN }} --format "{{.ID}}")
+    #    echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
+    #    echo "$IMAGE_ID"
+    ## Paso 6: Ejecutar la imagen Docker en un nuevo contenedor para pruebas y análisis
     #- name: Ejecutar Docker image
     #  run: |
     #    echo "Ejecutando la imagen Docker"
