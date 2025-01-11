@@ -294,17 +294,17 @@ jobs:
         run: |
           echo "Ejecutando análisis de Trivy"
           
-          # Asegurarse de que el binario de Trivy esté en el PATH
-          export PATH=$PATH:$(pwd)/bin
-          
-          # Ejecutar el análisis (se especifica la imagen en Docker Hub)
-          ./bin/trivy image --severity HIGH,CRITICAL efelantevolador/laboratorio-final-devsecops:latest
+        #  # Asegurarse de que el binario de Trivy esté en el PATH
+        #  export PATH=$PATH:$(pwd)/bin
+        #  
+        #  # Ejecutar el análisis (se especifica la imagen en Docker Hub)
+        #  ./bin/trivy image --severity HIGH,CRITICAL efelantevolador/laboratorio-final-devsecops:latest
         
-          - name: Run Trivy Scan
-          uses: aquasecurity/trivy-action@master
-          with:
-            image-ref: 'efelantevolador/laboratorio-final-devsecops:latest'
-            format: 'table'
+      - name: Run Trivy Scan
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'efelantevolador/laboratorio-final-devsecops:latest'
+          format: 'table'
 
 
       
