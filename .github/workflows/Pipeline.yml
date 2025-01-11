@@ -270,22 +270,22 @@ jobs:
       - name: Pull Docker
         run: |
           docker pull efelantevolador/laboratorio-final-devsecops:latest
+
+      #Paso 2 Muestra tabla con informacion de vulnerabilidades
+      - name: Ejecutar Trivy Scan (TABLE INFO)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'efelantevolador/laboratorio-final-devsecops:latest'
+          format: 'table'
+
       # Paso 2: Ejecutar Trivy Scan
-      - name: Ejecutar Trivy Scan
+      - name: Ejecutar Trivy Scan (Json detiene proceso)
         id: trivy_scan
         uses: aquasecurity/trivy-action@master
         with:
           image-ref: 'efelantevolador/laboratorio-final-devsecops:latest'
           format: 'json' # Cambiado a json para obtener resultados más detallados
-          exit-code: '1'  # Esto hará que el pipeline falle si se encuentran vulnerabilidades
-
-      ##Paso 2
-      #- name: Ejecutar Trivy Scan
-      #  uses: aquasecurity/trivy-action@master
-      #  with:
-      #    image-ref: 'efelantevolador/laboratorio-final-devsecops:latest'
-      #    format: 'table'
-
+          #exit-code: '1'  # Esto hará que el pipeline falle si se encuentran vulnerabilidades
 
       # Paso 3: Revisar vulnerabilidades
       - name: Revisar resultados de Trivy
