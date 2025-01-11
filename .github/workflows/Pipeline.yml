@@ -235,11 +235,12 @@ jobs:
         docker build -t ${{ env.NOMBRE_IMAGEN }} .
     
     # Paso 6: Listar todas las imágenes Docker existentes y obtener el ID de la nueva imagen
-    - name: List Docker images and get ID
+    - name: Listar Docker images y obtener ID de imagen
       run: |
         docker images
         IMAGE_ID=$(docker images ${{ env.NOMBRE_IMAGEN }} --format "{{.ID}}")
-        echo "ID de la imagen: $IMAGE_ID"
         echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
     # Paso 7
-    
+    - name: Ejecutar imagen en entorno para pruebas
+      run: echo "$IMAGE_ID"
+      #docker run --name devsecops-container -p 3000: 3000 47188064f443
