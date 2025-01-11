@@ -193,7 +193,7 @@ jobs:
 #          fi
 
   Contruir-Docker:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
     #needs: SCA
     steps:
     # Paso 0: Descargar el código del repositorio
@@ -250,7 +250,14 @@ jobs:
     needs: Contruir-Docker
     runs-on: ubuntu-24.04
     steps:
-    # Paso 1: Instalar Trivy
+    # Paso 1: Iniciar sesión en Docker Hub
+    - name: Iniciar Sesion en Docker Hub
+      uses: docker/login-action@v1
+      with:
+        username: ${{ secrets.DOCKER_USER }}
+        password: ${{ secrets.DOCKER_PASSWORD }}
+
+    # Paso 2: Instalar Trivy
     - name: Instalar Trivy
       run: |
         sudo apt-get update
@@ -260,7 +267,7 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y trivy
 
-    # Paso 2: Escanear la imagen Docker y mostrar la tabla de análisis
+    # Paso 3: Escanear la imagen Docker y mostrar la tabla de análisis
     - name: Ejecutar Trivy Scan
       run: |
         echo "Ejecutando análisis de vulnerabilidades con Trivy"
