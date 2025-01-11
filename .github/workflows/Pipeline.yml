@@ -195,9 +195,8 @@ jobs:
   IMAGE-ANALISIS-DOCKER:
     runs-on: ubuntu-latest
     #needs: SCA
-
     steps:
-    # 0. Checkout: Obtenemos el código fuente.
+    # Paso 0: Descargar el código del repositorio
     - name: Checkout Código
       uses: actions/checkout@v3
 
@@ -205,7 +204,7 @@ jobs:
     - name: Set up Docker Buildx
       uses: docker/setup-buildx-action@v1
 
-    # Paso 2: Login en Docker Hub
+    # Paso 2: Iniciar sesión en Docker Hub
     - name: Iniciar Sesion en Docker Hub
       id: iniciar_sesion
       uses: docker/login-action@v1
@@ -213,10 +212,10 @@ jobs:
         username: ${{ secrets.DOCKER_USER }}
         password: ${{ secrets.DOCKER_PASSWORD }}
 
-    # Paso 3: Verificar si la imagen ya existe, detiene la ejecucion y elimina el contenedor luego crea una nueva.
+    # Paso 3: Verificar si la imagen ya existe, detener la ejecución y eliminar el contenedor, luego crear una nueva
     - name: Verificar y manejar imagen existente
-      # Detener y eliminar el contenedor si existe
       run: | 
+        # Detener y eliminar el contenedor si existe
         if [ "$(docker ps -q -f name=${{ env.NOMBRE_IMAGEN }})" ]; then
           echo "Deteniendo contenedor existente: ${{ env.NOMBRE_IMAGEN }}"
           docker stop ${{ env.NOMBRE_IMAGEN }}
@@ -234,13 +233,15 @@ jobs:
         echo "Construyendo nueva imagen Docker"
         docker build -t ${{ env.NOMBRE_IMAGEN }} .
     
-    # Paso 6: Listar todas las imágenes Docker existentes y obtener el ID de la nueva imagen
+    # Paso 4: Listar todas las imágenes Docker existentes y obtener el ID de la nueva imagen
     - name: Listar Docker images y obtener ID de imagen
       run: |
         docker images
         IMAGE_ID=$(docker images ${{ env.NOMBRE_IMAGEN }} --format "{{.ID}}")
         echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
-    # Paso 7
-    - name: Ejecutar imagen en entorno para pruebas
-      run: echo "$IMAGE_ID"
-      #docker run --name devsecops-container -p 3000: 3000 47188064f443
+
+    # Paso 5: Ejecutar la imagen Docker en un nuevo contenedor para pruebas y análisis
+    - name: Ejecutar Docker image
+      run: |
+        echo "Ejecutando la imagen Docker"
+        docker run --name devsecops-container -p 3000:3000 -d $IMAGE_ID
