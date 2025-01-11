@@ -215,61 +215,49 @@ jobs:
     # Paso 3: Verificar si la imagen ya existe, detener la ejecución y eliminar el contenedor, luego crear una nueva
     - name: Verificar y manejar imagen existente
       run: | 
-        # Detener y eliminar el contenedor si existe
-        if [ "$(docker ps -q -f name=${{ env.NOMBRE_IMAGEN }})" ]; then
-          echo "Deteniendo contenedor existente: ${{ env.NOMBRE_IMAGEN }}"
-          docker stop ${{ env.NOMBRE_IMAGEN }}
-          echo "Eliminando contenedor existente: ${{ env.NOMBRE_IMAGEN }}"
-          docker rm ${{ env.NOMBRE_IMAGEN }}
-        fi
-
-        # Eliminar la imagen si existe
-        if docker images ${{ env.NOMBRE_IMAGEN }} | grep -q ${{ env.NOMBRE_IMAGEN }}; then
-          echo "Eliminando imagen existente: ${{ env.NOMBRE_IMAGEN }}"
-          docker rmi ${{ env.NOMBRE_IMAGEN }}
-        fi
-
         # Construir la nueva imagen Docker
         echo "Construyendo nueva imagen Docker"
         docker build -t ${{ env.NOMBRE_IMAGEN }} .
     
-    # Paso 4: Listar todas las imágenes Docker existentes y obtener el ID de la nueva imagen
+    # Paso 4: Subir la imagen a Docker Hub
+    - name: Subir imagen a Docker Hub
+      run: |
+        docker push ${{ env.NOMBRE_IMAGEN }}
+    
+    # Paso 5: Listar todas las imágenes Docker existentes y obtener el ID de la nueva imagen
     - name: Listar Docker images y obtener ID de imagen
       run: |
         docker images
         IMAGE_ID=$(docker images ${{ env.NOMBRE_IMAGEN }} --format "{{.ID}}")
         echo "IMAGE_ID=$IMAGE_ID" >> $GITHUB_ENV
         echo "$IMAGE_ID"
-    # Paso 5: Ejecutar la imagen Docker en un nuevo contenedor para pruebas y análisis
-    - name: Ejecutar Docker image
-      run: |
-        echo "Ejecutando la imagen Docker"
-        docker run --name devsecops-container -p 3000:3000 -d $IMAGE_ID
+
+    ## Paso 5: Ejecutar la imagen Docker en un nuevo contenedor para pruebas y análisis
+    #- name: Ejecutar Docker image
+    #  run: |
+    #    echo "Ejecutando la imagen Docker"
+    #    docker run --name devsecops-container -p 3000:3000 -d $IMAGE_ID
   
   DockerScan:
     needs: Contruir-Docker
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-22.04
     steps:
-    # Paso 1: Iniciar sesión en Docker Hub
-    - name: Iniciar Sesion en Docker Hub
-      uses: docker/login-action@v1
-      with:
-        username: ${{ secrets.DOCKER_USER }}
-        password: ${{ secrets.DOCKER_PASSWORD }}
+      # Paso 1: Iniciar sesión en Docker Hub
+      - name: Iniciar Sesión en Docker Hub
+        uses: docker/login-action@v2
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
 
-    # Paso 2: Instalar Trivy
-    - name: Instalar Trivy
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y wget apt-transport-https gnupg lsb-release
-        wget -qO - https://aquasecurity.github.io/trivy-repo/deb/public.key | sudo apt-key add -
-        echo deb https://aquasecurity.github.io/trivy-repo/deb $(lsb_release -sc) main | sudo tee -a /etc/apt/sources.list.d/trivy.list
-        sudo apt-get update
-        sudo apt-get install -y trivy
+      # Paso 2: Instalar Trivy
+      - name: Instalar Trivy
+        run: |
+          curl -sfL https://raw.githubusercontent.com/aquasecurity/trivy/main/contrib/install.sh | sh
+          sudo mv trivy /usr/local/bin/
 
-    # Paso 3: Escanear la imagen Docker y mostrar la tabla de análisis
-    - name: Ejecutar Trivy Scan
-      run: |
-        echo "Ejecutando análisis de vulnerabilidades con Trivy"
-        trivy image --format table --output trivy_report.txt ${{ env.NOMBRE_IMAGEN }}
-        cat trivy_report.txt
+      # Paso 3: Escanear la imagen Docker con Trivy
+      - name: Ejecutar Trivy Scan
+        run: |
+          echo "Ejecutando análisis de vulnerabilidades con Trivy"
+          trivy image --format table --output trivy_report.txt ${{ env.NOMBRE_IMAGEN }}
+          cat trivy_report.txt
