@@ -277,13 +277,28 @@ jobs:
           format: 'table'
           #exit-code: '1'  # Esto hará que el pipeline falle si se encuentran vulnerabilidades
 
-  Deploy:
+  deploy-local:
     needs: DockerScan
-    runs-on: ubuntu-24.04
+    runs-on: self-hosted
     steps:
-      # Paso 0: Iniciar sesión en Docker Hub
-      - name: Docker Login
-        uses: docker/login-action@v3.0.0
-        with:
-          username: ${{ secrets.DOCKER_USER }}
-          password: ${{ secrets.DOCKER_PASSWORD }}
+      - uses: actions/checkout@v2
+      
+      - name: Login to Docker
+        run: |
+          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
+      
+      - name: Stop existing container
+        run: |
+          docker stop devsecops-container || true
+          docker rm devsecops-container || true
+        continue-on-error: true
+      
+      - name: Pull and run container
+        run: |
+          docker pull efelantevolador/laboratorio-final-devsecops:latest
+          docker run -d --name devsecops-container -p 3000:3000 efelantevolador/laboratorio-final-devsecops:latest
+      
+      - name: Verify deployment
+        run: |
+          sleep 10
+          curl http://localhost:3000 || exit 1
