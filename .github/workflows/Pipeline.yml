@@ -281,7 +281,7 @@ jobs:
     needs: DockerScan
     runs-on: self-hosted
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       
       - name: Login to Docker
         run: |
