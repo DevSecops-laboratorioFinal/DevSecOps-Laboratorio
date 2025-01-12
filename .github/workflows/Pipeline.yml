@@ -282,31 +282,25 @@ jobs:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v3
-      
-      #- name: Login to Docker
-      #  run: |
-      #    echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
-      
+
       - name: Iniciar Sesion en Docker Hub
         uses: docker/login-action@v3.0.0
         with:
           username: ${{ secrets.DOCKER_USER }}
           password: ${{ secrets.DOCKER_PASSWORD }}
 
-
-
-      - name: Stop existing container
+      - name: Detener y eliminar contenedor existente
         run: |
-          docker stop devsecops-container || true
-          docker rm devsecops-container || true
+          docker stop devsecops-container
+          if ($?) { docker rm devsecops-container }
         continue-on-error: true
-      
-      - name: Pull and run container
+
+      - name: Pull y ejecutar contenedor
         run: |
           docker pull efelantevolador/laboratorio-final-devsecops:latest
           docker run -d --name devsecops-container -p 3000:3000 efelantevolador/laboratorio-final-devsecops:latest
-      
-      - name: Verify deployment
+
+      - name: Verificar despliegue
         run: |
           sleep 10
           curl http://localhost:3000 || exit 1
