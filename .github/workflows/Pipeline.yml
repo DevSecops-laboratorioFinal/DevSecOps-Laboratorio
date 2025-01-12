@@ -301,7 +301,25 @@ jobs:
           docker pull efelantevolador/laboratorio-final-devsecops:latest
           docker run -d --name devsecops-container -p 3000:3000 efelantevolador/laboratorio-final-devsecops:latest
 
-      - name: Verificar despliegue
-        run: |
-          sleep 30
-          curl http://localhost:3000 || exit 1
+          - name: Verificar despliegue
+          run: |
+            sleep 60
+            max_retries=5
+            attempt=0
+            while [ $attempt -lt $max_retries ]; do
+              http_response=$(curl --write-out "%{http_code}" --silent --output /dev/null http://localhost:3000)
+              if [ "$http_response" -eq 200 ]; then
+                echo "El sitio está funcionando correctamente."
+                break
+              else
+                echo "Esperando respuesta del sitio... Intento #$((attempt+1))"
+                attempt=$((attempt+1))
+                sleep 10
+              fi
+            done
+        
+            if [ $attempt -eq $max_retries ]; then
+              echo "El sitio no respondió correctamente después de $max_retries intentos."
+              exit 1
+            fi
+        
