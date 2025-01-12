@@ -283,10 +283,18 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       
-      - name: Login to Docker
-        run: |
-          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
+      #- name: Login to Docker
+      #  run: |
+      #    echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USER }} --password-stdin
       
+      - name: Iniciar Sesion en Docker Hub
+        uses: docker/login-action@v3.0.0
+        with:
+          username: ${{ secrets.DOCKER_USER }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+
+
       - name: Stop existing container
         run: |
           docker stop devsecops-container || true
