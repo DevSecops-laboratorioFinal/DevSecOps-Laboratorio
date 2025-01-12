@@ -303,5 +303,5 @@ jobs:
 
       - name: Verificar despliegue
         run: |
-          sleep 10
+          sleep 30
           curl http://localhost:3000 || exit 1
