@@ -278,7 +278,6 @@ jobs:
           #exit-code: '1'  # Esto hará que el pipeline falle si se encuentran vulnerabilidades
 
   deploy-local:
-    #ss
     needs: DockerScan
     runs-on: self-hosted
     steps:
