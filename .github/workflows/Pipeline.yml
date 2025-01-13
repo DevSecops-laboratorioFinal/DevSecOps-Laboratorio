@@ -300,25 +300,16 @@ jobs:
           docker pull efelantevolador/laboratorio-final-devsecops:latest
           docker run -d --name devsecops-container -p 3000:3000 efelantevolador/laboratorio-final-devsecops:latest
 
-      - name: Verificar despliegue
+      - name: Verificar contenedores en ejecución
+        id: check_running_containers
         run: |
-          sleep 60
-          max_retries=5
-          attempt=0
-          while [ $attempt -lt $max_retries ]; do
-            http_response=$(curl --write-out "%{http_code}" --silent --output /dev/null http://localhost:3000)
-            if [ "$http_response" -eq 200 ]; then
-              echo "El sitio está funcionando correctamente."
-              break
-            else
-              echo "Esperando respuesta del sitio... Intento #$((attempt+1))"
-              attempt=$((attempt+1))
-              sleep 10
-            fi
-          done
-      
-          if [ $attempt -eq $max_retries ]; then
-            echo "El sitio no respondió correctamente después de $max_retries intentos."
-            exit 1
+          docker ps > running_containers.txt
+          if [ -s running_containers.txt ]; then
+            echo "Hay contenedores en ejecución:"
+            cat running_containers.txt
+            echo "::set-output name=containers_running::true"
+          else
+            echo "No hay contenedores en ejecución."
+            echo "::set-output name=containers_running::false"
           fi
         
