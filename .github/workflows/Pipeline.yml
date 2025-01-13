@@ -302,14 +302,15 @@ jobs:
 
       - name: Verificar contenedores en ejecución
         id: check_running_containers
+        shell: pwsh
         run: |
           docker ps > running_containers.txt
-          if [ -s running_containers.txt ]; then
-            echo "Hay contenedores en ejecución:"
-            cat running_containers.txt
-            echo "::set-output name=containers_running::true"
-          else
-            echo "No hay contenedores en ejecución."
-            echo "::set-output name=containers_running::false"
-          fi
+          if ((Get-Content running_containers.txt).Length -gt 1) {
+              Write-Host "Hay contenedores en ejecución:"
+              Get-Content running_containers.txt
+              echo "containers_running=true" >> $GITHUB_ENV
+          } else {
+              Write-Host "No hay contenedores en ejecución."
+              echo "containers_running=false" >> $GITHUB_ENV
+          }
         
